@@ -1,0 +1,1 @@
+// OneShotContinuationは既存ターゲットとの互換性のためOAuth.swiftで定義しています。

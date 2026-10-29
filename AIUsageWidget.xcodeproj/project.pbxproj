@@ -1,0 +1,955 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		02DAEC6B013CD2DB94704FD2 /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		1ADF60317066F285B9C18D4C /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		1E5B9749D309820322B959CF /* Watch/WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365A4467D9C14B2FB9B98134 /* Watch/WatchStore.swift */; };
+		2B83B8FEE84DE1AC7AC12642 /* Shared/UsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */; };
+		2C50AB45D7C76BCC0F17BCDC /* App/WebLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07411F7332F670359BA0607F /* App/WebLogin.swift */; };
+		315B8C29FAFAD333B7DBAC45 /* Watch/WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 365A4467D9C14B2FB9B98134 /* Watch/WatchStore.swift */; };
+		33032AA610C36C34576EF4F0 /* Shared/UsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */; };
+		372FD98EDB649BE136354264 /* Shared/OAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */; };
+		3D9A26537C5EC1FDC92415D6 /* Widget/AIUsageWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016FF4AC94C23CD55B36A189 /* Widget/AIUsageWidget.swift */; };
+		42CF87CE5230455E55F07F0E /* Shared/WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */; };
+		43D5EBC7974BCA3AF908E88C /* Watch/AIUsageWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC7305D1F974E0BA7316483D /* Watch/AIUsageWatchApp.swift */; };
+		4CEA0FACE35587F59FD4CC37 /* Shared/WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */; };
+		4DF8BCA8B0316A2CC297289D /* App/AIUsageApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99A92877DCEBFBB35D2AC0A4 /* App/AIUsageApp.swift */; };
+		681F119FA24B9B5C045C7036 /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		6EC508F0087143FFA4A1AA1A /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		7BF95A0E6EDD8A99518569A8 /* Shared/UsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */; };
+		7C2BF38D0F56F5782C964C1C /* AIUsageWidgetsiOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 31B0614906D2EAC994FE361D /* AIUsageWidgetsiOS.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7C7AB3B1368A2BCEFF0BD0D5 /* Shared/OneShotContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAF2F24A7EBABD2DBB203CF /* Shared/OneShotContinuation.swift */; };
+		8E7A513795973C9289E94388 /* WatchWidget/WatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F9F32DD130EA284ED327B1 /* WatchWidget/WatchWidgets.swift */; };
+		9FC4563C703EA48715D19ADC /* App/PhoneWatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AD372AE5DA19195EED65DE /* App/PhoneWatchBridge.swift */; };
+		A04650D7534E4A3A875A9DA7 /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		AF01A8811A48DE1B203731C7 /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		BAAB9A9838150E7F9CA8564B /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		BD7915D031BCEC8145401E0F /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		BEBCFBDD2C12F9363AA227AF /* AIUsageWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A0DC6F7EB17CE6C2A1B756B5 /* AIUsageWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		BEBD3F9593226DB229AA30AF /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		C1FEFAE0B36B5CB891EF14EE /* Shared/OAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */; };
+		CB2BBF5A3FFADD334519FFC9 /* Watch/WatchReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5D520DA63D33DF19A30E21 /* Watch/WatchReceiver.swift */; };
+		D71F6B573A8D455A7FABA1CE /* App/AIUsageApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99A92877DCEBFBB35D2AC0A4 /* App/AIUsageApp.swift */; };
+		E0621A4E93B1B261157CD325 /* AIUsageWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 5A7408388550BDE5868B916A /* AIUsageWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E32916E2FF6DF706C6649348 /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		E33458AB8DDAB7404002B513 /* Widget/AIUsageWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 016FF4AC94C23CD55B36A189 /* Widget/AIUsageWidget.swift */; };
+		E6C0F8644469AB9966EC746B /* Shared/OAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */; };
+		E7965BC46342C8479E6CE6EC /* Shared/UsageCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */; };
+		E79EF1F72E07ED4296E4ADE3 /* AIUsageWidgetsmacOS.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 163CD1FACE683638F9546550 /* AIUsageWidgetsmacOS.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EC354899172D15099F4976FE /* Shared/OneShotContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BAF2F24A7EBABD2DBB203CF /* Shared/OneShotContinuation.swift */; };
+		F36B38D433611F43D4E267F3 /* App/WebLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07411F7332F670359BA0607F /* App/WebLogin.swift */; };
+		F5C7ADFBC56A09E97228BC63 /* Shared/OAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */; };
+		F74F08D9C38AFDF7864A2156 /* Shared/WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */; };
+		F7A583AAA6DDFF67EEF667A8 /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
+		FF082EBF1D8E2142862FEB84 /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3A22CD14CC39FE1B56E66E92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 71E2E82BA7B4A18B07E9234D;
+			remoteInfo = AIUsageWidgetsiOS;
+		};
+		733258042EDBDC16960454F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 225C9E4E4AE0873983B21532;
+			remoteInfo = AIUsageWidgetsmacOS;
+		};
+		907271CE24C94D96CA1E13D7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CE9A570386AE383B403947D5;
+			remoteInfo = AIUsageWatch;
+		};
+		984A933135D565D59F20B557 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8F2BBF2151FF5DE3790B320F;
+			remoteInfo = AIUsageWatchWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1E76165DB160F6E3CC03F5EF /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				E0621A4E93B1B261157CD325 /* AIUsageWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D47F7CE9028AFD20C3796E6 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7C2BF38D0F56F5782C964C1C /* AIUsageWidgetsiOS.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		914C36A1F35445783974C908 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BEBCFBDD2C12F9363AA227AF /* AIUsageWatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6B10647F907CD449834BE3A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E79EF1F72E07ED4296E4ADE3 /* AIUsageWidgetsmacOS.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UsageCard.swift; sourceTree = "<group>"; };
+		00AD372AE5DA19195EED65DE /* App/PhoneWatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/PhoneWatchBridge.swift; sourceTree = "<group>"; };
+		016FF4AC94C23CD55B36A189 /* Widget/AIUsageWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget/AIUsageWidget.swift; sourceTree = "<group>"; };
+		07411F7332F670359BA0607F /* App/WebLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/WebLogin.swift; sourceTree = "<group>"; };
+		163CD1FACE683638F9546550 /* AIUsageWidgetsmacOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = AIUsageWidgetsmacOS.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/OAuth.swift; sourceTree = "<group>"; };
+		31B0614906D2EAC994FE361D /* AIUsageWidgetsiOS.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = AIUsageWidgetsiOS.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3595115E23D27D5B9E446D9B /* Shared/Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Storage.swift; sourceTree = "<group>"; };
+		365A4467D9C14B2FB9B98134 /* Watch/WatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Watch/WatchStore.swift; sourceTree = "<group>"; };
+		39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/WatchSnapshot.swift; sourceTree = "<group>"; };
+		49D6CA3C0EA7537523269571 /* Shared/Usage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Usage.swift; sourceTree = "<group>"; };
+		5A7408388550BDE5868B916A /* AIUsageWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AIUsageWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8BAF2F24A7EBABD2DBB203CF /* Shared/OneShotContinuation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/OneShotContinuation.swift; sourceTree = "<group>"; };
+		99A92877DCEBFBB35D2AC0A4 /* App/AIUsageApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AIUsageApp.swift; sourceTree = "<group>"; };
+		A0DC6F7EB17CE6C2A1B756B5 /* AIUsageWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = AIUsageWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A5F9F32DD130EA284ED327B1 /* WatchWidget/WatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchWidget/WatchWidgets.swift; sourceTree = "<group>"; };
+		AC7305D1F974E0BA7316483D /* Watch/AIUsageWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Watch/AIUsageWatchApp.swift; sourceTree = "<group>"; };
+		DA0D869852262D68E67E0794 /* AIUsageiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AIUsageiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA8D6E91BFADB3132A0A2BCE /* AIUsagemacOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AIUsagemacOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD5D520DA63D33DF19A30E21 /* Watch/WatchReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Watch/WatchReceiver.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		B28B7AF69320201D1CF206EB = {
+			isa = PBXGroup;
+			children = (
+				49D6CA3C0EA7537523269571 /* Shared/Usage.swift */,
+				3595115E23D27D5B9E446D9B /* Shared/Storage.swift */,
+				17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */,
+				0083F55BC9A4680E7B0BFE42 /* Shared/UsageCard.swift */,
+				99A92877DCEBFBB35D2AC0A4 /* App/AIUsageApp.swift */,
+				07411F7332F670359BA0607F /* App/WebLogin.swift */,
+				016FF4AC94C23CD55B36A189 /* Widget/AIUsageWidget.swift */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+				00AD372AE5DA19195EED65DE /* App/PhoneWatchBridge.swift */,
+				39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */,
+				365A4467D9C14B2FB9B98134 /* Watch/WatchStore.swift */,
+				A5F9F32DD130EA284ED327B1 /* WatchWidget/WatchWidgets.swift */,
+				FD5D520DA63D33DF19A30E21 /* Watch/WatchReceiver.swift */,
+				AC7305D1F974E0BA7316483D /* Watch/AIUsageWatchApp.swift */,
+				8BAF2F24A7EBABD2DBB203CF /* Shared/OneShotContinuation.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DA0D869852262D68E67E0794 /* AIUsageiOS.app */,
+				31B0614906D2EAC994FE361D /* AIUsageWidgetsiOS.appex */,
+				FA8D6E91BFADB3132A0A2BCE /* AIUsagemacOS.app */,
+				163CD1FACE683638F9546550 /* AIUsageWidgetsmacOS.appex */,
+				A0DC6F7EB17CE6C2A1B756B5 /* AIUsageWatchWidgets.appex */,
+				5A7408388550BDE5868B916A /* AIUsageWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		225C9E4E4AE0873983B21532 /* AIUsageWidgetsmacOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 08AD36C012E7D8713E9789D5 /* Build configuration list for PBXNativeTarget "AIUsageWidgetsmacOS" */;
+			buildPhases = (
+				A39D6D4249A169769A1696DC /* Sources */,
+				666A963583A12436CA544C05 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIUsageWidgetsmacOS;
+			productName = AIUsageWidgetsmacOS;
+			productReference = 163CD1FACE683638F9546550 /* AIUsageWidgetsmacOS.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		2BA7C81703AD89F7DD1AE3EA /* AIUsagemacOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62696C46B46B292645CFBFD5 /* Build configuration list for PBXNativeTarget "AIUsagemacOS" */;
+			buildPhases = (
+				553343A9224D41FD2A43BFFC /* Sources */,
+				F3383A446B1AF0E786DD94E2 /* Resources */,
+				D6B10647F907CD449834BE3A /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8BFE17115A2A8552B5A1A10F /* PBXTargetDependency */,
+			);
+			name = AIUsagemacOS;
+			productName = AIUsagemacOS;
+			productReference = FA8D6E91BFADB3132A0A2BCE /* AIUsagemacOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5C3C2A9FA62F00A26AD2AA11 /* AIUsageiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8589EE4A0B12D1E940D2DB4F /* Build configuration list for PBXNativeTarget "AIUsageiOS" */;
+			buildPhases = (
+				6536C07C783D5546339147D9 /* Sources */,
+				8D60FDF99D8E57C1CC7E88CC /* Resources */,
+				6D47F7CE9028AFD20C3796E6 /* Embed Foundation Extensions */,
+				1E76165DB160F6E3CC03F5EF /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D5AD4780F1AE4B74CE424BB1 /* PBXTargetDependency */,
+				E89FDEBDD0448D9F2447B039 /* PBXTargetDependency */,
+			);
+			name = AIUsageiOS;
+			productName = AIUsageiOS;
+			productReference = DA0D869852262D68E67E0794 /* AIUsageiOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		71E2E82BA7B4A18B07E9234D /* AIUsageWidgetsiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BEE476F03BF134CD1C0501C4 /* Build configuration list for PBXNativeTarget "AIUsageWidgetsiOS" */;
+			buildPhases = (
+				A45137E058DFD29CEC481BC9 /* Sources */,
+				3D8D98BE2E769CFFCB328C69 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIUsageWidgetsiOS;
+			productName = AIUsageWidgetsiOS;
+			productReference = 31B0614906D2EAC994FE361D /* AIUsageWidgetsiOS.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		8F2BBF2151FF5DE3790B320F /* AIUsageWatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 89368E76DF19F79AC56567A3 /* Build configuration list for PBXNativeTarget "AIUsageWatchWidgets" */;
+			buildPhases = (
+				A4F8DC9F1DFDB4AD5362D146 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIUsageWatchWidgets;
+			productName = AIUsageWatchWidgets;
+			productReference = A0DC6F7EB17CE6C2A1B756B5 /* AIUsageWatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		CE9A570386AE383B403947D5 /* AIUsageWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 38AC32180E49484C3D573007 /* Build configuration list for PBXNativeTarget "AIUsageWatch" */;
+			buildPhases = (
+				66A6F9908D3DE63E7AAAD671 /* Sources */,
+				914C36A1F35445783974C908 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DB04C76F1A51F856EAA5EB8A /* PBXTargetDependency */,
+			);
+			name = AIUsageWatch;
+			productName = AIUsageWatch;
+			productReference = 5A7408388550BDE5868B916A /* AIUsageWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2710;
+			};
+			buildConfigurationList = BC7E287B75C6D3E574547D08 /* Build configuration list for PBXProject "AIUsageWidget" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ja,
+				en,
+				Base,
+			);
+			mainGroup = B28B7AF69320201D1CF206EB;
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5C3C2A9FA62F00A26AD2AA11 /* AIUsageiOS */,
+				71E2E82BA7B4A18B07E9234D /* AIUsageWidgetsiOS */,
+				2BA7C81703AD89F7DD1AE3EA /* AIUsagemacOS */,
+				225C9E4E4AE0873983B21532 /* AIUsageWidgetsmacOS */,
+				8F2BBF2151FF5DE3790B320F /* AIUsageWatchWidgets */,
+				CE9A570386AE383B403947D5 /* AIUsageWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3D8D98BE2E769CFFCB328C69 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		666A963583A12436CA544C05 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8D60FDF99D8E57C1CC7E88CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3383A446B1AF0E786DD94E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		553343A9224D41FD2A43BFFC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F7A583AAA6DDFF67EEF667A8 /* Shared/Usage.swift in Sources */,
+				BEBD3F9593226DB229AA30AF /* Shared/Storage.swift in Sources */,
+				372FD98EDB649BE136354264 /* Shared/OAuth.swift in Sources */,
+				33032AA610C36C34576EF4F0 /* Shared/UsageCard.swift in Sources */,
+				D71F6B573A8D455A7FABA1CE /* App/AIUsageApp.swift in Sources */,
+				2C50AB45D7C76BCC0F17BCDC /* App/WebLogin.swift in Sources */,
+				EC354899172D15099F4976FE /* Shared/OneShotContinuation.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6536C07C783D5546339147D9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				02DAEC6B013CD2DB94704FD2 /* Shared/Usage.swift in Sources */,
+				681F119FA24B9B5C045C7036 /* Shared/Storage.swift in Sources */,
+				F5C7ADFBC56A09E97228BC63 /* Shared/OAuth.swift in Sources */,
+				7BF95A0E6EDD8A99518569A8 /* Shared/UsageCard.swift in Sources */,
+				4DF8BCA8B0316A2CC297289D /* App/AIUsageApp.swift in Sources */,
+				F36B38D433611F43D4E267F3 /* App/WebLogin.swift in Sources */,
+				9FC4563C703EA48715D19ADC /* App/PhoneWatchBridge.swift in Sources */,
+				4CEA0FACE35587F59FD4CC37 /* Shared/WatchSnapshot.swift in Sources */,
+				7C7AB3B1368A2BCEFF0BD0D5 /* Shared/OneShotContinuation.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		66A6F9908D3DE63E7AAAD671 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BD7915D031BCEC8145401E0F /* Shared/Usage.swift in Sources */,
+				1ADF60317066F285B9C18D4C /* Shared/Storage.swift in Sources */,
+				42CF87CE5230455E55F07F0E /* Shared/WatchSnapshot.swift in Sources */,
+				315B8C29FAFAD333B7DBAC45 /* Watch/WatchStore.swift in Sources */,
+				CB2BBF5A3FFADD334519FFC9 /* Watch/WatchReceiver.swift in Sources */,
+				43D5EBC7974BCA3AF908E88C /* Watch/AIUsageWatchApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A39D6D4249A169769A1696DC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6EC508F0087143FFA4A1AA1A /* Shared/Usage.swift in Sources */,
+				FF082EBF1D8E2142862FEB84 /* Shared/Storage.swift in Sources */,
+				E6C0F8644469AB9966EC746B /* Shared/OAuth.swift in Sources */,
+				E7965BC46342C8479E6CE6EC /* Shared/UsageCard.swift in Sources */,
+				3D9A26537C5EC1FDC92415D6 /* Widget/AIUsageWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A45137E058DFD29CEC481BC9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BAAB9A9838150E7F9CA8564B /* Shared/Usage.swift in Sources */,
+				E32916E2FF6DF706C6649348 /* Shared/Storage.swift in Sources */,
+				C1FEFAE0B36B5CB891EF14EE /* Shared/OAuth.swift in Sources */,
+				2B83B8FEE84DE1AC7AC12642 /* Shared/UsageCard.swift in Sources */,
+				E33458AB8DDAB7404002B513 /* Widget/AIUsageWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A4F8DC9F1DFDB4AD5362D146 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A04650D7534E4A3A875A9DA7 /* Shared/Usage.swift in Sources */,
+				AF01A8811A48DE1B203731C7 /* Shared/Storage.swift in Sources */,
+				F74F08D9C38AFDF7864A2156 /* Shared/WatchSnapshot.swift in Sources */,
+				1E5B9749D309820322B959CF /* Watch/WatchStore.swift in Sources */,
+				8E7A513795973C9289E94388 /* WatchWidget/WatchWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8BFE17115A2A8552B5A1A10F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 225C9E4E4AE0873983B21532 /* AIUsageWidgetsmacOS */;
+			targetProxy = 733258042EDBDC16960454F5 /* PBXContainerItemProxy */;
+		};
+		D5AD4780F1AE4B74CE424BB1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 71E2E82BA7B4A18B07E9234D /* AIUsageWidgetsiOS */;
+			targetProxy = 3A22CD14CC39FE1B56E66E92 /* PBXContainerItemProxy */;
+		};
+		DB04C76F1A51F856EAA5EB8A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8F2BBF2151FF5DE3790B320F /* AIUsageWatchWidgets */;
+			targetProxy = 984A933135D565D59F20B557 /* PBXContainerItemProxy */;
+		};
+		E89FDEBDD0448D9F2447B039 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CE9A570386AE383B403947D5 /* AIUsageWatch */;
+			targetProxy = 907271CE24C94D96CA1E13D7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1C6332C759B35B5B3487F3CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = P25EN39D49;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+			};
+			name = Debug;
+		};
+		2F69A08FA329A5C867E35A7E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWidgetsmacOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWidgetsmacOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.macos.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "";
+			};
+			name = Debug;
+		};
+		3EE543DF4DBD274CD2762426 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWatchWidgets-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.watchkitapp.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		40D8E7A7BDE11E1B47DF4B1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWidgetsmacOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWidgetsmacOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.macos.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "";
+			};
+			name = Release;
+		};
+		44B164F9D1175C3BEC6E15E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWidgetsiOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWidgetsiOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		708D913C3085F6A04C90757A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsagemacOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsagemacOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.macos";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "";
+			};
+			name = Debug;
+		};
+		725786660628EDA3BEDF14A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageiOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageiOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		725D5A4C6BB7BF223EE0CBAF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsagemacOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsagemacOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.macos";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "";
+			};
+			name = Release;
+		};
+		8B7212A5EF49F64ACD4F072A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = P25EN39D49;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		CA5C580C56F39B1F137059F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWatch-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		CD32EA065AB152C5906E0368 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWatchWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWatchWidgets-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.watchkitapp.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		D01DAC27E95A0F44CAF71BC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWidgetsiOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWidgetsiOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D8E4324D64E1C66E59317052 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageiOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageiOS-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EFC269E42FE2C6771CB1B0C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_ENTITLEMENTS = AIUsageWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AIUsageWatch-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.s-ueki7.aiusage.ios.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		08AD36C012E7D8713E9789D5 /* Build configuration list for PBXNativeTarget "AIUsageWidgetsmacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F69A08FA329A5C867E35A7E /* Debug */,
+				40D8E7A7BDE11E1B47DF4B1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		38AC32180E49484C3D573007 /* Build configuration list for PBXNativeTarget "AIUsageWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EFC269E42FE2C6771CB1B0C5 /* Debug */,
+				CA5C580C56F39B1F137059F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62696C46B46B292645CFBFD5 /* Build configuration list for PBXNativeTarget "AIUsagemacOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				708D913C3085F6A04C90757A /* Debug */,
+				725D5A4C6BB7BF223EE0CBAF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8589EE4A0B12D1E940D2DB4F /* Build configuration list for PBXNativeTarget "AIUsageiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				725786660628EDA3BEDF14A2 /* Debug */,
+				D8E4324D64E1C66E59317052 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		89368E76DF19F79AC56567A3 /* Build configuration list for PBXNativeTarget "AIUsageWatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CD32EA065AB152C5906E0368 /* Debug */,
+				3EE543DF4DBD274CD2762426 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BC7E287B75C6D3E574547D08 /* Build configuration list for PBXProject "AIUsageWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C6332C759B35B5B3487F3CD /* Debug */,
+				8B7212A5EF49F64ACD4F072A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BEE476F03BF134CD1C0501C4 /* Build configuration list for PBXNativeTarget "AIUsageWidgetsiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44B164F9D1175C3BEC6E15E4 /* Debug */,
+				D01DAC27E95A0F44CAF71BC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}
