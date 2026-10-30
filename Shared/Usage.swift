@@ -11,6 +11,7 @@ struct UsageWindow: Codable, Identifiable {
     var title: String
     var used: Double
     var reset: Date?
+    var durationSeconds: Double? = nil
     var remaining: Double { max(0, min(100, 100 - used)) }
 }
 
@@ -70,7 +71,8 @@ enum UsageClient {
                 let seconds = row["limit_window_seconds"] as? Double
                 let title = seconds == 18000 ? "5時間" : seconds == 604800 ? "週間" : fallback
                 let reset = (row["reset_at"] as? Double).map { Date(timeIntervalSince1970: $0) }
-                windows.append(UsageWindow(id: key, title: title, used: used, reset: reset))
+                windows.append(UsageWindow(id: key, title: title, used: used, reset: reset,
+                                           durationSeconds: seconds))
             }
         } else if service == .claude {
             for (key, title) in [("five_hour", "5時間"), ("seven_day", "週間")] {

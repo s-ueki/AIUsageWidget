@@ -50,6 +50,44 @@ let decodedClearedSnapshot = try WatchSnapshot.decode(JSONEncoder().encode(clear
 check(decodedClearedSnapshot.readings.isEmpty, "empty snapshot is valid")
 check(WatchPeriod.weekly.window(in: codex)?.id == "secondary_window", "Codex weekly selection")
 check(WatchPeriod.weekly.window(in: claude)?.id == "seven_day", "Claude weekly selection")
+// Codex may return the weekly limit as primary and the five-hour limit as secondary.
+let reversedCodex = try UsageClient.parse(Data(#"{"rate_limit":{"primary_window":{"used_percent":72,"limit_window_seconds":604800},"secondary_window":{"used_percent":13,"limit_window_seconds":18000}}}"#.utf8), service: .codex)
+check(WatchPeriod.session.window(in: reversedCodex)?.remaining == 87, "Codex reversed five-hour limit")
+check(WatchPeriod.weekly.window(in: reversedCodex)?.remaining == 28, "Codex reversed weekly limit")
+let reversedPacket = try WatchSnapshot.decode(JSONEncoder().encode(WatchSnapshot(sentAt: Date(), readings: [reversedCodex])))
+check(WatchPeriod.session.window(in: reversedPacket.reading(for: .codex))?.remaining == 87, "duration survives Watch transport")
+// Existing cached snapshots have no durationSeconds field.
+var legacyJSON = try JSONSerialization.jsonObject(with: JSONEncoder().encode(reversedCodex)) as! [String: Any]
+legacyJSON["windows"] = (legacyJSON["windows"] as! [[String: Any]]).map { row in
+    var row = row
+    row.removeValue(forKey: "durationSeconds")
+    return row
+}
+let legacyCodex = try JSONDecoder().decode(UsageReading.self, from: JSONSerialization.data(withJSONObject: legacyJSON))
+check(WatchPeriod.session.window(in: legacyCodex)?.remaining == 87, "legacy reversed five-hour limit")
+check(WatchPeriod.weekly.window(in: legacyCodex)?.remaining == 28, "legacy reversed weekly limit")
+var weeklyOnly = reversedCodex
+weeklyOnly.windows.removeLast()
+check(WatchPeriod.session.window(in: weeklyOnly) == nil, "weekly-only limit must not appear as five-hour")
+var unknownDuration = reversedCodex
+unknownDuration.windows = [UsageWindow(id: "primary_window", title: "5時間", used: 10, durationSeconds: 3600)]
+check(WatchPeriod.session.window(in: unknownDuration) == nil, "known duration takes precedence over legacy title")
+check(WatchPeriod.session.limitAbsent(in: weeklyOnly), "weekly-only Codex has no five-hour limit")
+check(!WatchPeriod.weekly.limitAbsent(in: weeklyOnly), "existing weekly limit is retained")
+var sessionOnly = codex
+sessionOnly.windows.removeLast()
+check(WatchPeriod.weekly.limitAbsent(in: sessionOnly), "session-only Codex has no weekly limit")
+for period in WatchPeriod.allCases {
+    check(!period.limitAbsent(in: nil), "missing reading is not unlimited")
+    check(!period.limitAbsent(in: unknownDuration), "unknown duration is not unlimited")
+    check(!period.limitAbsent(in: codex), "both limits exist")
+}
+var claudeWeeklyOnly = claude
+claudeWeeklyOnly.windows.removeFirst()
+check(WatchPeriod.session.limitAbsent(in: claudeWeeklyOnly), "Claude weekly-only limit")
+var claudeSessionOnly = claude
+claudeSessionOnly.windows.removeLast()
+check(WatchPeriod.weekly.limitAbsent(in: claudeSessionOnly), "Claude session-only limit")
 var invalidSnapshot = firstSnapshot
 invalidSnapshot.readings = [codex, codex]
 do { _ = try WatchSnapshot.decode(JSONEncoder().encode(invalidSnapshot)); fatalError("duplicate services accepted") } catch {}

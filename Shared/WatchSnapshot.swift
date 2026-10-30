@@ -40,15 +40,28 @@ struct WatchSnapshot: Codable {
 enum WatchPeriod: String, CaseIterable {
     case session, weekly
     var title: String { self == .session ? "5時間" : "週間" }
+    /// A reading containing only the other known period represents an absent limit.
+    /// Missing readings and unrecognized periods must remain unknown.
+    func limitAbsent(in reading: UsageReading?) -> Bool {
+        guard let reading, reading.windows.count == 1, window(in: reading) == nil else { return false }
+        let other: WatchPeriod = self == .session ? .weekly : .session
+        return other.window(in: reading) != nil
+    }
     func window(in reading: UsageReading?) -> UsageWindow? {
         guard let reading else { return nil }
-        let id: String
-        switch (reading.service, self) {
-        case (.codex, .session): id = "primary_window"
-        case (.codex, .weekly): id = "secondary_window"
-        case (.claude, .session): id = "five_hour"
-        case (.claude, .weekly): id = "seven_day"
+        if reading.service == .codex {
+            // primary/secondary are not period identifiers. Prefer API duration.
+            let seconds: Double = self == .session ? 18000 : 604800
+            if let window = reading.windows.first(where: { $0.durationSeconds == seconds }) {
+                return window
+            }
+            // Older iPhone versions send only the title derived from the duration.
+            return reading.windows.first {
+                $0.durationSeconds == nil &&
+                    ($0.title == title || (self == .session && $0.title == "セッション"))
+            }
         }
+        let id = self == .session ? "five_hour" : "seven_day"
         return reading.windows.first { $0.id == id }
     }
 }

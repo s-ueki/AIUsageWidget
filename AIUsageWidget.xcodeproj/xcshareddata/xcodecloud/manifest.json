@@ -1,0 +1,9 @@
+{
+  "id" : "de9b3344-43de-4ec2-925b-f835fcee9b91",
+  "targets" : [
+    {
+      "id" : "8baaeaf3-0c16-4e55-b233-91b1d5ff89f3",
+      "name" : "AIUsageWatch"
+    }
+  ]
+}
