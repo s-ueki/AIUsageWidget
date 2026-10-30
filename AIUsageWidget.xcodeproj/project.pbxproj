@@ -48,6 +48,9 @@
 		F74F08D9C38AFDF7864A2156 /* Shared/WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F4EAEF590F625D16FB78C2 /* Shared/WatchSnapshot.swift */; };
 		F7A583AAA6DDFF67EEF667A8 /* Shared/Usage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6CA3C0EA7537523269571 /* Shared/Usage.swift */; };
 		FF082EBF1D8E2142862FEB84 /* Shared/Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3595115E23D27D5B9E446D9B /* Shared/Storage.swift */; };
+		CDBE12CB00123299A2DF634A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B06BC5E46B8AFAEB253232B5 /* Assets.xcassets */; };
+		002EE54B7218B4402EA124BC /* AssetsMac.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C71AC9E0F7A8229FEA96419B /* AssetsMac.xcassets */; };
+		39696259558DF31D3E7C8D27 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B06BC5E46B8AFAEB253232B5 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -149,12 +152,16 @@
 		DA0D869852262D68E67E0794 /* AIUsageiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AIUsageiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA8D6E91BFADB3132A0A2BCE /* AIUsagemacOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AIUsagemacOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD5D520DA63D33DF19A30E21 /* Watch/WatchReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Watch/WatchReceiver.swift; sourceTree = "<group>"; };
+		B06BC5E46B8AFAEB253232B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C71AC9E0F7A8229FEA96419B /* AssetsMac.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = AssetsMac.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
+				B06BC5E46B8AFAEB253232B5 /* Assets.xcassets */,
+				C71AC9E0F7A8229FEA96419B /* AssetsMac.xcassets */,
 				49D6CA3C0EA7537523269571 /* Shared/Usage.swift */,
 				3595115E23D27D5B9E446D9B /* Shared/Storage.swift */,
 				17128A5F80A76BE49A9A5A62 /* Shared/OAuth.swift */,
@@ -278,6 +285,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 38AC32180E49484C3D573007 /* Build configuration list for PBXNativeTarget "AIUsageWatch" */;
 			buildPhases = (
+				128B8B0A786BE886CFA4773A /* Resources */,
 				66A6F9908D3DE63E7AAAD671 /* Sources */,
 				914C36A1F35445783974C908 /* Embed Foundation Extensions */,
 			);
@@ -343,6 +351,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				39696259558DF31D3E7C8D27 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,7 +359,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				002EE54B7218B4402EA124BC /* AssetsMac.xcassets in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		128B8B0A786BE886CFA4773A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (CDBE12CB00123299A2DF634A /* Assets.xcassets in Resources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
@@ -619,6 +635,7 @@
 		708D913C3085F6A04C90757A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsagemacOS.entitlements;
@@ -649,6 +666,7 @@
 		725786660628EDA3BEDF14A2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsageiOS.entitlements;
@@ -680,6 +698,7 @@
 		725D5A4C6BB7BF223EE0CBAF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsagemacOS.entitlements;
@@ -748,6 +767,7 @@
 		CA5C580C56F39B1F137059F5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsageWatch.entitlements;
@@ -829,6 +849,7 @@
 		D8E4324D64E1C66E59317052 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsageiOS.entitlements;
@@ -859,6 +880,7 @@
 		EFC269E42FE2C6771CB1B0C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_ENTITLEMENTS = AIUsageWatch.entitlements;
