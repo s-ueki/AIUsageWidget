@@ -95,6 +95,10 @@ final class WatchReceiver: NSObject, ObservableObject, WCSessionDelegate {
             self.completeBackgroundTasks()
         }
     }
+    nonisolated func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
+        guard let data = userInfo[WatchSnapshot.messageKey] as? Data else { return }
+        Task { @MainActor in self.receive(data) }
+    }
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         guard let data = applicationContext[WatchSnapshot.messageKey] as? Data else { return }
         Task { @MainActor in self.receive(data) }

@@ -16,7 +16,7 @@ Mac・iPhone・iPadからCodex / Claude Codeの残量を直接取得するSwiftU
 
 ## 未実装・未確認
 
-**完成品ではなく、実データ接続のための試作版です。** Webログインは各端末で1回ずつ行います（端末間でトークンを共有しません）。手動登録したトークンは更新用トークンを持たないため自動更新されません。
+**完成品ではなく、実データ接続のための試作版です。** Webログインは各端末で1回ずつ行います（端末間でトークンを共有しません）。認証設定はWebログインに統一しています。
 
 Webログインは、Codex CLI / Claude Codeの公式ログインと同じOAuth設定（クライアントID・接続先、`Shared/OAuth.swift`の`OAuthConfig`）を使います。これらは外部アプリ向けに公開・保証されたものではなく、各社の規約上の扱いも明確ではありません。CLI側の変更で使えなくなった場合は`OAuthConfig`の値を更新してください。
 
@@ -34,19 +34,16 @@ Webログインは、Codex CLI / Claude Codeの公式ログインと同じOAuth�
 2. Bundle Identifierは`com.s-ueki7.aiusage`を基準に設定済みです（Bundle IDにアンダースコアは使えないため`s-ueki7`としています）。別の識別子に変える場合は、重複しない値に置き換えます。Bundle Identifierは他人と重複できないため、重複すると署名に失敗します。`work/generate_project.py`の`BASE`を書き換えて実行すると、4ターゲットのBundle ID・entitlements・Info.plistをまとめて変更できます（プロジェクトファイルを作り直すため、Teamは選び直しになります）。手作業で変える場合は、各ターゲットのBundle Identifier、entitlementsの`keychain-access-groups`、Info.plistの`SharedKeychainGroup`をそろえてください。
 3. 使うターゲットのSigning & Capabilitiesで、ご自身のTeam（無料なら「(お名前) (Personal Team)」）を選びます。iPhone / iPadは`AIUsageiOS`と`AIUsageWidgetsiOS`の2つ、Macは`AIUsagemacOS`と`AIUsageWidgetsmacOS`の2つです。
 4. iPhone / iPadはScheme `AIUsageiOS`、Macは`AIUsagemacOS`を選び、実行します。iPhoneでは「設定 → プライバシーとセキュリティ → デベロッパモード」をオンにし、初回は「設定 → 一般 → VPNとデバイス管理」で開発元を信頼します。
-5. 各端末のアプリで「認証情報を設定」→「Webでログイン」（または手動登録）を行い、実際の使用量画面と数値が一致するか確認します。
+5. 各端末のアプリで「認証情報を設定」→「Webでログイン」を行い、実際の使用量画面と数値が一致するか確認します。
 6. 各端末で「AI使用量」のウィジェットを追加します。
 
 無料アカウントの制限: インストールしたアプリは**7日で期限切れ**になり、再度Xcodeから実行する必要があります。また、同時に入れられるアプリ数や、1週間に作れるApp ID数にも上限があります。署名していないビルドでは、Keychain共有の成功を確認できません。
 
 ## 認証情報について
 
-通常のOpenAI APIキーやAnthropic APIキーではなく、契約アカウントのアクセストークンを使います。通常は「Webでログイン」で自動取得できます。以下は手動登録する場合の取得元です。
+「Webでログイン」で契約アカウントにログインし、使用量取得に必要な認証情報を自動保存します。アクセストークンやAccount IDを手動入力する機能はありません。Webログイン後に自動で戻れない場合のURL・コード貼り付けによる完了操作は利用できます。
 
-- **Codex:** 既存のCLIログインの`~/.codex/auth.json`（CODEX_HOMEを設定している場合はそのディレクトリ）の`tokens.access_token`。必要な場合は同じtokens内の`account_id`をアプリのChatGPT Account ID欄に登録します。`OPENAI_API_KEY`や`refresh_token`を入れる欄ではありません。
-- **Claude Code:** 既存のログイン情報の`claudeAiOauth.accessToken`。macOSではKeychainの`Claude Code-credentials`などに保存される場合があります。環境により`~/.claude/.credentials.json`に保存されます。使用量取得には`user:profile`などの適切な権限が必要です。`claude setup-token`で作成したトークンは使用量取得用とは限りません。
-
-認証情報はこのアプリにだけ入力してください。チャット、スクリーンショット、Gitリポジトリへ載せないでください。アプリに保存したトークンはCLIの更新と連動しないため、失効したら元のサービスで再認証し、アプリへ再登録します。他端末の情報を更新・削除する操作はありません。
+認証情報は端末のKeychainに保存します。認証が失効して自動更新できない場合は、アプリから再度Webログインしてください。認証情報をチャット、スクリーンショット、Gitリポジトリへ載せないでください。他端末の情報を更新・削除する操作はありません。
 
 この版はCLIの認証情報ファイルの自動読み取り・自動転送を行いません。同じアカウントを各端末へ登録すると、各端末はそのアカウント全体の残量を取得します。端末別の消費量を集計するものではありません。
 

@@ -3,12 +3,27 @@ import WidgetKit
 
 @main
 struct AIUsageApp: App {
+    @Environment(\.scenePhase) private var phase
     init() {
         #if os(iOS)
         PhoneWatchBridge.shared.start()
         #endif
     }
-    var body: some Scene { WindowGroup { Dashboard() } }
+    var body: some Scene {
+        WindowGroup { Dashboard() }
+        #if os(iOS)
+        .backgroundTask(.appRefresh(PhoneWatchBridge.refreshIdentifier)) {
+            await PhoneWatchBridge.shared.backgroundRefresh()
+        }
+        .onChange(of: phase) { _, value in
+            // App.initではまだ.backgroundTaskのハンドラが登録されていない。
+            // Scene構築後の状態遷移で初回予約と再予約を行う。
+            if value == .active || value == .background {
+                PhoneWatchBridge.shared.scheduleRefresh()
+            }
+        }
+        #endif
+    }
 }
 
 struct Dashboard: View {
@@ -70,10 +85,11 @@ struct Dashboard: View {
         defer {
             refreshing = false
             WidgetCenter.shared.reloadAllTimelines()
-            #if os(iOS)
-            PhoneWatchBridge.shared.publish()
-            #endif
         }
+        #if os(iOS)
+        errors = await PhoneWatchBridge.shared.refresh()
+        for service in Service.allCases { readings[service] = ReadingStore.read(service) }
+        #else
         for service in Service.allCases {
             do {
                 let reading = try await UsageFetcher.fetch(service)
@@ -82,6 +98,7 @@ struct Dashboard: View {
                 errors.removeValue(forKey: service)
             } catch { errors[service] = error.localizedDescription }
         }
+        #endif
     }
 }
 
@@ -89,16 +106,6 @@ struct CredentialEditor: View {
     var service: Service
     var onChanged: () -> Void
     @Environment(\.dismiss) private var dismiss
-    private var stateToken = SwiftUI.State<String>(initialValue: "")
-    private var token: String {
-        get { stateToken.wrappedValue }
-        nonmutating set { stateToken.wrappedValue = newValue }
-    }
-    private var stateAccountid = SwiftUI.State<String>(initialValue: "")
-    private var accountID: String {
-        get { stateAccountid.wrappedValue }
-        nonmutating set { stateAccountid.wrappedValue = newValue }
-    }
     private var stateError = SwiftUI.State<String?>(initialValue: nil)
     private var error: String? {
         get { stateError.wrappedValue }
@@ -122,9 +129,37 @@ struct CredentialEditor: View {
         nonmutating set { stateCallback.wrappedValue = newValue }
     }
     var body: some View {
+        #if os(macOS)
+        VStack(spacing: 0) {
+            HStack {
+                Text(service.title).font(.title2.bold())
+                Spacer()
+            }
+            .padding(20)
+            Divider()
+            settingsForm.formStyle(.grouped)
+            Divider()
+            HStack {
+                Spacer()
+                Button("閉じる") { login.cancel(); dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
+            .padding(16)
+        }
+        .frame(width: 480, height: showsPaste ? 560 : 380)
+        #else
         NavigationStack {
+            settingsForm
+                .navigationTitle(service.title)
+                .toolbar { Button("閉じる") { login.cancel(); dismiss() } }
+        }
+        .frame(minWidth: 360, minHeight: 560)
+        #endif
+    }
+
+    private var settingsForm: some View {
             Form {
-                Section("Webでログイン（推奨）") {
+                Section("Webでログイン") {
                     Text("\(OAuthConfig.of(service).loginHost)のログイン画面を開き、ログイン後にアクセストークンと更新用トークンを自動で保存します。期限切れ時も自動で更新します。")
                     Button {
                         Task { await webLogin { try await login.start(service) } }
@@ -144,20 +179,8 @@ struct CredentialEditor: View {
                         }.disabled(loggingIn || callback.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 }
-                Section("手動で登録") {
-                    Text("\(service.title)の使用量取得用アクセストークンを登録します。通常のAPIキーではありません。手動登録したトークンは自動更新されないため、期限切れ時は再登録が必要です。")
-                    SecureField("アクセストークン", text: stateToken.projectedValue)
-                        .autocorrectionDisabled()
-                        #if os(iOS)
-                        .textInputAutocapitalization(.never)
-                        #endif
-                    if service == .codex { TextField("ChatGPT Account ID（必要な場合）", text: stateAccountid.projectedValue) }
-                    Text("認証情報はこの端末のKeychainに保存します。外部の中継サーバーやiCloudへ送信しません。")
-                        .font(.caption).foregroundStyle(.secondary)
-                    Button("保存") {
-                        store(Credential(token: token.trimmingCharacters(in: .whitespacesAndNewlines), accountID: accountID.trimmingCharacters(in: .whitespacesAndNewlines)))
-                    }.disabled(token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+                Text("認証情報はこの端末のKeychainに保存します。外部の中継サーバーやiCloudへ送信しません。")
+                    .font(.caption).foregroundStyle(.secondary)
                 if let error { Text(error).foregroundStyle(.red) }
                 Button("認証情報と表示データを削除", role: .destructive) {
                     do {
@@ -171,9 +194,6 @@ struct CredentialEditor: View {
                     } catch { self.error = error.localizedDescription }
                 }
             }
-            .navigationTitle(service.title)
-            .toolbar { Button("閉じる") { login.cancel(); dismiss() } }
-        }.frame(minWidth: 360, minHeight: 560)
     }
     @MainActor func webLogin(_ action: () async throws -> Credential) async {
         loggingIn = true
