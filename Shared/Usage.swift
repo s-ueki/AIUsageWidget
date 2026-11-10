@@ -1,9 +1,14 @@
 import Foundation
 
+/// プロバイダーごとの登録枠。既存のrawValueはアカウント1の保存キーとして維持する。
 enum Service: String, Codable, CaseIterable, Identifiable {
-    case codex, claude
+    case codex, claude, codex2, claude2
+    static let allCases: [Service] = [.codex, .codex2, .claude, .claude2]
+    static let overviewAccounts: [Service] = [.codex, .claude]
     var id: String { rawValue }
-    var title: String { self == .codex ? "Codex" : "Claude Code" }
+    var isCodex: Bool { self == .codex || self == .codex2 }
+    var accountNumber: Int { self == .codex2 || self == .claude2 ? 2 : 1 }
+    var title: String { (isCodex ? "CODEX" : "CLAUDE") + String(accountNumber) }
 }
 
 struct UsageWindow: Codable, Identifiable {
@@ -19,6 +24,7 @@ struct UsageReading: Codable {
     var service: Service
     var windows: [UsageWindow]
     var fetchedAt: Date
+    var plan: String? = nil
 }
 
 enum UsageError: LocalizedError {
@@ -38,15 +44,15 @@ enum UsageError: LocalizedError {
 enum UsageClient {
     static func fetch(_ service: Service, token: String, accountID: String = "") async throws -> UsageReading {
         guard !token.isEmpty else { throw UsageError.noCredential }
-        let endpoint = service == .codex
+        let endpoint = service.isCodex
             ? "https://chatgpt.com/backend-api/wham/usage"
             : "https://api.anthropic.com/api/oauth/usage"
         var request = URLRequest(url: URL(string: endpoint)!)
         request.timeoutInterval = 15
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        if service == .claude { request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta") }
-        if service == .codex && !accountID.isEmpty {
+        if !service.isCodex { request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta") }
+        if service.isCodex && !accountID.isEmpty {
             request.setValue(accountID, forHTTPHeaderField: "ChatGPT-Account-Id")
         }
         let config = URLSessionConfiguration.ephemeral
@@ -64,7 +70,7 @@ enum UsageClient {
             throw UsageError.invalidResponse
         }
         var windows: [UsageWindow] = []
-        if service == .codex, let limit = root["rate_limit"] as? [String: Any] {
+        if service.isCodex, let limit = root["rate_limit"] as? [String: Any] {
             for (key, fallback) in [("primary_window", "セッション"), ("secondary_window", "週間")] {
                 guard let row = limit[key] as? [String: Any], let used = row["used_percent"] as? Double,
                       used.isFinite, (0...100).contains(used) else { continue }
@@ -74,7 +80,7 @@ enum UsageClient {
                 windows.append(UsageWindow(id: key, title: title, used: used, reset: reset,
                                            durationSeconds: seconds))
             }
-        } else if service == .claude {
+        } else if !service.isCodex {
             for (key, title) in [("five_hour", "5時間"), ("seven_day", "週間")] {
                 guard let row = root[key] as? [String: Any], let used = row["utilization"] as? Double,
                       used.isFinite, (0...100).contains(used) else { continue }
@@ -92,6 +98,6 @@ enum UsageClient {
             }
         }
         guard !windows.isEmpty else { throw UsageError.invalidResponse }
-        return UsageReading(service: service, windows: windows, fetchedAt: Date())
+        return UsageReading(service: service, windows: windows, fetchedAt: Date(), plan: root["plan_type"] as? String)
     }
 }

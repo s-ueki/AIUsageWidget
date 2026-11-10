@@ -8,21 +8,27 @@ struct UsageEntry: TimelineEntry {
 }
 
 struct UsageProvider: TimelineProvider {
+    var services: [Service] = Service.overviewAccounts
+    var includesAllAccountsInLarge = false
+    private func accounts(for family: WidgetFamily) -> [Service] {
+        if includesAllAccountsInLarge && family == .systemLarge { return Service.allCases }
+        return services
+    }
     func placeholder(in context: Context) -> UsageEntry { UsageEntry(date: Date()) }
     func getSnapshot(in context: Context, completion: @escaping (UsageEntry) -> Void) {
         var entry = UsageEntry(date: Date())
-        for service in Service.allCases { entry.readings[service] = ReadingStore.read(service) }
+        for service in accounts(for: context.family) { entry.readings[service] = ReadingStore.read(service) }
         completion(entry)
     }
     func getTimeline(in context: Context, completion: @escaping (Timeline<UsageEntry>) -> Void) {
         Task {
             var entry = UsageEntry(date: Date())
-            async let codex = Self.refresh(.codex)
-            async let claude = Self.refresh(.claude)
-            let results = await (codex, claude)
-            for (service, reading, error) in [results.0, results.1] {
-                entry.readings[service] = reading
-                entry.errors[service] = error
+            await withTaskGroup(of: (Service, UsageReading?, String?).self) { group in
+                for service in accounts(for: context.family) { group.addTask { await Self.refresh(service) } }
+                for await (service, reading, error) in group {
+                    entry.readings[service] = reading
+                    entry.errors[service] = error
+                }
             }
             completion(Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(30 * 60))))
         }
@@ -43,14 +49,42 @@ struct UsageProvider: TimelineProvider {
 struct UsageWidgetView: View {
     let entry: UsageEntry
     let services: [Service]
+    var includesAllAccountsInLarge = false
     @Environment(\.widgetFamily) var family
+    private var showsAllAccounts: Bool {
+        return includesAllAccountsInLarge && family == .systemLarge
+    }
+    private func card(_ service: Service) -> some View {
+        UsageCard(service: service, reading: entry.readings[service], error: entry.errors[service], compact: true, dense: family == .systemSmall)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            ForEach(services) { service in
-                UsageCard(service: service, reading: entry.readings[service], error: entry.errors[service], compact: true, dense: family == .systemSmall)
-                if service != services.last { Divider() }
+        Group {
+            if showsAllAccounts {
+                VStack(spacing: 12) {
+                    HStack(alignment: .top, spacing: 14) {
+                        card(.codex)
+                        Divider()
+                        card(.claude)
+                    }.frame(maxHeight: .infinity, alignment: .top)
+                    Divider()
+                    HStack(alignment: .top, spacing: 14) {
+                        card(.codex2)
+                        Divider()
+                        card(.claude2)
+                    }.frame(maxHeight: .infinity, alignment: .top)
+                }
+            } else {
+                HStack(alignment: .top, spacing: 14) {
+                    ForEach(services) { service in
+                        card(service)
+                        if service != services.last { Divider() }
+                    }
+                }
             }
-        }.containerBackground(for: .widget) { Rectangle().fill(Color.black.gradient) }
+        }
+        .containerBackground(for: .widget) { Rectangle().fill(Color.black.gradient) }
+        .widgetURL(URL(string: "aiusage-widget://dashboard"))
         // 背景は常に黒なので、端末がライトモードでも文字色をダーク用にします（preferredColorSchemeはウィジェットでは効きません）。
         .environment(\.colorScheme, .dark)
     }
@@ -59,9 +93,9 @@ struct UsageWidgetView: View {
 struct CombinedWidget: Widget {
     let kind = "AIUsageCombined"
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: UsageProvider()) { UsageWidgetView(entry: $0, services: Service.allCases) }
-            .configurationDisplayName("Codex・Claude Code")
-            .description("両サービスの残量とリセット日時")
+        StaticConfiguration(kind: kind, provider: UsageProvider(includesAllAccountsInLarge: true)) { UsageWidgetView(entry: $0, services: Service.overviewAccounts, includesAllAccountsInLarge: true) }
+            .configurationDisplayName("Codex・Claude 一覧")
+            .description("中サイズはCODEX1・CLAUDE1、大サイズは全4アカウントを表示")
             .supportedFamilies([.systemMedium, .systemLarge])
     }
 }
@@ -71,7 +105,7 @@ struct SingleWidget: Widget {
     init() { service = .codex }
     init(service: Service) { self.service = service }
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "AIUsage-\(service.rawValue)", provider: UsageProvider()) { UsageWidgetView(entry: $0, services: [service]) }
+        StaticConfiguration(kind: "AIUsage-\(service.rawValue)", provider: UsageProvider(services: [service])) { UsageWidgetView(entry: $0, services: [service]) }
             .configurationDisplayName(service.title)
             .description("残量とリセット日時")
             .supportedFamilies([.systemSmall, .systemMedium])
@@ -84,5 +118,7 @@ struct AIUsageWidgets: WidgetBundle {
         CombinedWidget()
         SingleWidget(service: .codex)
         SingleWidget(service: .claude)
+        SingleWidget(service: .codex2)
+        SingleWidget(service: .claude2)
     }
 }

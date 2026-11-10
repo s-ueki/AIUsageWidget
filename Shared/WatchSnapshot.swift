@@ -49,7 +49,7 @@ enum WatchPeriod: String, CaseIterable {
     }
     func window(in reading: UsageReading?) -> UsageWindow? {
         guard let reading else { return nil }
-        if reading.service == .codex {
+        if reading.service.isCodex {
             // primary/secondary are not period identifiers. Prefer API duration.
             let seconds: Double = self == .session ? 18000 : 604800
             if let window = reading.windows.first(where: { $0.durationSeconds == seconds }) {

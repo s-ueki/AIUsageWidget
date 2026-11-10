@@ -15,7 +15,7 @@ struct OAuthConfig {
 
     static func of(_ service: Service) -> OAuthConfig {
         switch service {
-        case .codex:
+        case .codex, .codex2:
             // Codex CLIと同じ登録。リダイレクト先はlocalhost:1455固定です。
             return OAuthConfig(clientID: "app_EMoamEEZ73f0CkXaXp7hrann",
                                authorizeURL: "https://auth.openai.com/oauth/authorize",
@@ -26,7 +26,7 @@ struct OAuthConfig {
                                                  ("codex_cli_simplified_flow", "true"),
                                                  ("originator", "codex_cli_rs")],
                                loginHost: "chatgpt.com")
-        case .claude:
+        case .claude, .claude2:
             // Claude Codeの「Claudeアカウントでログイン」と同じ登録。
             return OAuthConfig(clientID: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
                                authorizeURL: "https://claude.ai/oauth/authorize",
@@ -109,9 +109,9 @@ enum OAuthClient {
         let config = OAuthConfig.of(request.service)
         var body = ["grant_type": "authorization_code", "code": code, "client_id": config.clientID,
                     "redirect_uri": request.redirectURI, "code_verifier": request.verifier]
-        if request.service == .claude { body["state"] = request.state }
+        if !request.service.isCodex { body["state"] = request.state }
         // Codexはフォーム形式、ClaudeはJSON形式で送ります（各CLIと同じ）。
-        let json = try await post(config.tokenURL, body: body, form: request.service == .codex)
+        let json = try await post(config.tokenURL, body: body, form: request.service.isCodex)
         return try credential(from: json, service: request.service, previous: nil)
     }
 
@@ -119,7 +119,7 @@ enum OAuthClient {
         guard let refreshToken = credential.refreshToken else { throw OAuthError.token(401) }
         let config = OAuthConfig.of(service)
         var body = ["grant_type": "refresh_token", "refresh_token": refreshToken, "client_id": config.clientID]
-        if service == .codex { body["scope"] = "openid profile email" }
+        if service.isCodex { body["scope"] = "openid profile email" }
         let json = try await post(config.tokenURL, body: body, form: false)
         return try self.credential(from: json, service: service, previous: credential)
     }
@@ -127,7 +127,20 @@ enum OAuthClient {
     static func credential(from json: [String: Any], service: Service, previous: Credential?) throws -> Credential {
         guard let token = json["access_token"] as? String, !token.isEmpty else { throw OAuthError.invalidToken }
         var accountID = previous?.accountID ?? ""
-        if service == .codex {
+        let claims = (json["id_token"] as? String).flatMap(jwtClaims) ?? jwtClaims(token)
+        let accessClaims = jwtClaims(token)
+        let auth = (accessClaims?["https://api.openai.com/auth"] as? [String: Any])
+            ?? (claims?["https://api.openai.com/auth"] as? [String: Any])
+        let profile = accessClaims?["https://api.openai.com/profile"] as? [String: Any]
+        let account = json["account"] as? [String: Any]
+        let organization = json["organization"] as? [String: Any]
+        let accountLabel = (account?["email_address"] as? String)
+            ?? (account?["email"] as? String) ?? (claims?["email"] as? String)
+            ?? (profile?["email"] as? String) ?? (claims?["name"] as? String)
+            ?? previous?.accountLabel
+        let plan = (auth?["chatgpt_plan_type"] as? String)
+            ?? (organization?["organization_type"] as? String) ?? previous?.plan
+        if service.isCodex {
             let claims = (json["id_token"] as? String).flatMap(jwtClaims) ?? jwtClaims(token)
             if let auth = claims?["https://api.openai.com/auth"] as? [String: Any],
                let id = auth["chatgpt_account_id"] as? String, !id.isEmpty { accountID = id }
@@ -136,7 +149,8 @@ enum OAuthClient {
             ?? (jwtClaims(token)?["exp"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue) }
         return Credential(token: token, accountID: accountID,
                           refreshToken: (json["refresh_token"] as? String) ?? previous?.refreshToken,
-                          expiresAt: expiresAt)
+                          expiresAt: expiresAt, accountLabel: accountLabel, plan: plan,
+                          profileFetchedAt: previous?.profileFetchedAt)
     }
 
     static func jwtClaims(_ jwt: String) -> [String: Any]? {
@@ -178,12 +192,33 @@ enum UsageFetcher {
     static func fetch(_ service: Service) async throws -> UsageReading {
         guard var credential = CredentialStore.read(service) else { throw UsageError.noCredential }
         if credential.needsRefresh { credential = try await refresh(credential, service) }
+        let reading: UsageReading
         do {
-            return try await UsageClient.fetch(service, token: credential.token, accountID: credential.accountID)
+            reading = try await UsageClient.fetch(service, token: credential.token, accountID: credential.accountID)
         } catch UsageError.http(let code) where (code == 401 || code == 403) && credential.refreshToken != nil {
             credential = try await refresh(credential, service)
-            return try await UsageClient.fetch(service, token: credential.token, accountID: credential.accountID)
+            reading = try await UsageClient.fetch(service, token: credential.token, accountID: credential.accountID)
         }
+        // 既存の保存データでもJWTに含まれる表示情報を復元する。
+        var display = (try? OAuthClient.credential(from: ["access_token": credential.token], service: service, previous: credential)) ?? credential
+        if !service.isCodex,
+           display.profileFetchedAt.map({ Date().timeIntervalSince($0) > 6 * 3600 }) ?? true {
+            // 表示用情報の失敗で、取得済みの使用量までエラーにしない。
+            if let profile = try? await AccountDisplay.fetchClaudeProfile(token: credential.token) {
+                display.accountLabel = profile.account ?? display.accountLabel
+                display.plan = profile.plan ?? display.plan
+                display.profileFetchedAt = Date()
+            }
+        }
+        if let plan = reading.plan { display.plan = plan }
+        // ログイン変更・ログアウト中に古い資格情報を書き戻さない。
+        if var latest = CredentialStore.read(service), latest.token == credential.token {
+            latest.accountLabel = display.accountLabel
+            latest.plan = display.plan
+            latest.profileFetchedAt = display.profileFetchedAt
+            try? CredentialStore.save(latest, for: service)
+        }
+        return reading
     }
 
     static func refresh(_ credential: Credential, _ service: Service) async throws -> Credential {
@@ -219,5 +254,48 @@ final class OneShotContinuation<Value: Sendable>: @unchecked Sendable {
         guard let pending else { return false }
         pending.resume(with: result)
         return true
+    }
+}
+
+
+/// 表示用情報のみ。プランが分からない場合は残量から推測しない。
+enum AccountDisplay {
+    static func planName(_ raw: String?) -> String {
+        guard let raw, !raw.isEmpty else { return "プラン未取得" }
+        switch raw.lowercased() {
+        case "free", "claude_free": return "Free"
+        case "plus": return "Plus"
+        case "pro", "claude_pro": return "Pro"
+        case "max", "claude_max": return "Max"
+        case "team", "claude_team": return "Team"
+        case "enterprise", "claude_enterprise": return "Enterprise"
+        case "business": return "Business"
+        case "edu": return "Edu"
+        default: return raw
+        }
+    }
+
+    static func claudeProfile(_ json: [String: Any]) -> (account: String?, plan: String?) {
+        let account = json["account"] as? [String: Any]
+        let organization = json["organization"] as? [String: Any]
+        return ((account?["email"] as? String) ?? (account?["email_address"] as? String),
+                organization?["organization_type"] as? String)
+    }
+
+    static func fetchClaudeProfile(token: String) async throws -> (account: String?, plan: String?) {
+        var request = URLRequest(url: URL(string: "https://api.anthropic.com/api/oauth/profile")!)
+        request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
+        request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
+        request.timeoutInterval = 5
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForResource = 5
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let (data, response) = try await session.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200,
+              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw UsageError.invalidResponse
+        }
+        return claudeProfile(json)
     }
 }

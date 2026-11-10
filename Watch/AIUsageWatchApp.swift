@@ -30,7 +30,7 @@ struct WatchDashboard: View {
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(Service.allCases) { service in
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(service.title).font(.headline).foregroundStyle(service == .codex ? .cyan : .orange)
+                        Text(service.title).font(.headline).foregroundStyle(service.isCodex ? .cyan : .orange)
                         if let reading = receiver.snapshot?.reading(for: service) {
                             ForEach(reading.windows) { window in
                                 VStack(alignment: .leading, spacing: 3) {
@@ -41,7 +41,7 @@ struct WatchDashboard: View {
                                             .font(.title3.bold()).monospacedDigit()
                                     }
                                     ProgressView(value: window.remaining, total: 100)
-                                        .tint(service == .codex ? .cyan : .orange)
+                                        .tint(service.isCodex ? .cyan : .orange)
                                     if let reset = window.reset {
                                         Text("リセット " + reset.formatted(.dateTime.month().day().hour().minute()))
                                             .font(.caption2).foregroundStyle(.secondary)

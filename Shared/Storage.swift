@@ -6,6 +6,9 @@ struct Credential: Codable {
     var accountID: String
     var refreshToken: String? = nil
     var expiresAt: Date? = nil
+    var accountLabel: String? = nil
+    var plan: String? = nil
+    var profileFetchedAt: Date? = nil
     var needsRefresh: Bool { refreshToken != nil && (expiresAt.map { $0.timeIntervalSinceNow < 300 } ?? false) }
 }
 

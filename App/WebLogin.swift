@@ -101,7 +101,8 @@ final class WebLogin: NSObject, ASWebAuthenticationPresentationContextProviding 
                 Task { @MainActor [weak self] in self?.finish(.failure(OAuthError.cancelled)) }
             }
             session.presentationContextProvider = self
-            session.prefersEphemeralWebBrowserSession = false
+            // 前回のブラウザログインを使い回さず、登録するアカウントを選べるようにする。
+            session.prefersEphemeralWebBrowserSession = true
             self.session = session
             if !session.start() { finish(.failure(OAuthError.cancelled)) }
         }

@@ -30,7 +30,7 @@ struct WatchComplicationView: View {
     private var window: UsageWindow? { period.window(in: reading) }
     private var stale: Bool { reading.map { entry.date.timeIntervalSince($0.fetchedAt) > 3600 } ?? false }
     private var amount: String { window.map { "\(Int($0.remaining.rounded()))%" } ?? "—" }
-    private var name: String { service == .codex ? "Codex" : "Claude" }
+    private var name: String { service.title }
 
     var body: some View {
         Group {
@@ -38,12 +38,12 @@ struct WatchComplicationView: View {
             case .accessoryCircular:
                 if let window {
                     Gauge(value: window.remaining, in: 0...100) {
-                        Text(service == .codex ? "CX" : "CL")
+                        Text((service.isCodex ? "CX" : "CL") + String(service.accountNumber))
                     } currentValueLabel: {
                         Text("\(Int(window.remaining.rounded()))").minimumScaleFactor(0.6)
                     }
                     .gaugeStyle(.accessoryCircular)
-                    .tint(stale ? .gray : service == .codex ? .cyan : .orange)
+                    .tint(stale ? .gray : service.isCodex ? .cyan : .orange)
                 } else { Text("—").font(.title2) }
             case .accessoryInline:
                 Text("\(name) \(period.title) \(amount)\(stale ? "・古いデータ" : "")")
@@ -79,7 +79,7 @@ struct WatchUsageWidget: Widget {
         // Interpolated localization text is unsupported in widget metadata.
         .configurationDisplayName(service.title + "・" + period.title)
         .description("iPhoneで取得した残量を表示します。")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies([.accessoryCircular, .accessoryInline])
     }
 }
 
@@ -118,34 +118,68 @@ struct OverviewPeriodBar: View {
     }
 }
 
+enum WatchOverviewSelection: String, CaseIterable {
+    case codex1, codex2, codexBoth, claude1, claude2, claudeBoth, pair1, pair2
+
+    var services: [Service] {
+        switch self {
+        case .codex1: return [.codex]
+        case .codex2: return [.codex2]
+        case .codexBoth: return [.codex, .codex2]
+        case .claude1: return [.claude]
+        case .claude2: return [.claude2]
+        case .claudeBoth: return [.claude, .claude2]
+        case .pair1: return [.codex, .claude]
+        case .pair2: return [.codex2, .claude2]
+        }
+    }
+    var title: String {
+        switch self {
+        case .codexBoth: return "CODEX1&2"
+        case .claudeBoth: return "CLAUDE1&2"
+        default: return services.map(\.title).joined(separator: "&")
+        }
+    }
+    // 配置済みのCODEX1・CLAUDE1はそのまま継続する。
+    var kind: String { self == .pair1 ? "WatchUsageOverview" : "WatchUsageOverview-" + rawValue }
+}
+
 struct WatchOverviewView: View {
     let entry: WatchEntry
+    var selection: WatchOverviewSelection = .pair1
 
     var body: some View {
         VStack(spacing: 5) {
-            ForEach(Service.allCases) { service in
+            if selection.services.count == 1 {
+                Text(selection.title)
+                    .font(.system(size: 12, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            ForEach(selection.services) { service in
                 let reading = entry.snapshot?.reading(for: service)
                 let session = WatchPeriod.session.window(in: reading)
                 let weekly = WatchPeriod.weekly.window(in: reading)
                 let stale = reading.map { entry.date.timeIntervalSince($0.fetchedAt) > 3600 } ?? false
                 HStack(spacing: 7) {
-                    Text(service == .codex ? "CODEX" : "CLAUDE")
-                        .font(.system(size: 9, weight: .bold))
-                        .frame(width: 39, alignment: .leading)
+                    if selection.services.count > 1 {
+                        Text(service.title)
+                            .font(.system(size: 9, weight: .bold))
+                            .frame(width: 45, alignment: .leading)
+                    }
                     OverviewPeriodBar(title: "5時間", remaining: session?.remaining,
-                                      color: stale ? .gray : service == .codex ? .cyan : .yellow,
+                                      color: stale ? .gray : service.isCodex ? .cyan : .yellow,
                                       limitAbsent: WatchPeriod.session.limitAbsent(in: reading))
                         .frame(maxWidth: .infinity)
                         .widgetAccentable()
                     OverviewPeriodBar(title: "週", remaining: weekly?.remaining,
-                                      color: stale ? .gray : service == .codex ? .blue : .orange,
+                                      color: stale ? .gray : service.isCodex ? .blue : .orange,
                                       limitAbsent: WatchPeriod.weekly.limitAbsent(in: reading))
                         .frame(maxWidth: .infinity)
                 }
                 .accessibilityElement(children: .combine)
             }
             Group {
-                if let oldest = entry.snapshot?.readings.map(\.fetchedAt).min() {
+                if let oldest = entry.snapshot?.readings.filter { selection.services.contains($0.service) }.map(\.fetchedAt).min() {
                     Text("取得 " + oldest.formatted(.dateTime.hour().minute())
                          + (entry.date.timeIntervalSince(oldest) > 3600 ? "・更新待ち" : ""))
                 } else {
@@ -161,13 +195,16 @@ struct WatchOverviewView: View {
 }
 
 struct WatchOverviewWidget: Widget {
+    let selection: WatchOverviewSelection
+    init() { selection = .pair1 }
+    init(_ selection: WatchOverviewSelection) { self.selection = selection }
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "WatchUsageOverview", provider: WatchProvider()) { entry in
-            WatchOverviewView(entry: entry)
+        StaticConfiguration(kind: selection.kind, provider: WatchProvider()) { entry in
+            WatchOverviewView(entry: entry, selection: selection)
                 .containerBackground(for: .widget) { Color.black }
         }
-        .configurationDisplayName("Codex・Claude")
-        .description("両サービスの5時間・週間残量をグラフ付きで表示します。")
+        .configurationDisplayName(selection.title)
+        .description("選んだアカウントの5時間・週間残量をグラフ付きで表示します。")
         .supportedFamilies([.accessoryRectangular])
     }
 }
@@ -198,8 +235,8 @@ struct DualPeriodGauge: View {
     var weeklyLimitAbsent = false
     var stale = false
 
-    private var sessionColor: Color { stale ? .gray : service == .codex ? .cyan : .yellow }
-    private var weeklyColor: Color { stale ? .gray : service == .codex ? .blue : .orange }
+    private var sessionColor: Color { stale ? .gray : service.isCodex ? .cyan : .yellow }
+    private var weeklyColor: Color { stale ? .gray : service.isCodex ? .blue : .orange }
     private func amount(_ value: Double?) -> String {
         value.map { "\(Int($0.rounded()))%" } ?? "—"
     }
@@ -217,7 +254,7 @@ struct DualPeriodGauge: View {
                     .stroke(weeklyColor, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
                 VStack(spacing: size * 0.025) {
                     HStack(spacing: 2) {
-                        Text(service == .codex ? "CODEX" : "CLAUDE")
+                        Text(service.title)
                         if stale { Image(systemName: "clock") }
                     }
                     .font(.system(size: size * 0.115, weight: .bold))
@@ -291,12 +328,38 @@ struct WatchDualPeriodWidget: Widget {
 @main
 struct AIUsageWatchWidgets: WidgetBundle {
     var body: some Widget {
-        WatchOverviewWidget()
+        RectangularWatchWidgets().body
         WatchUsageWidget(.codex, .session)
         WatchUsageWidget(.codex, .weekly)
         WatchUsageWidget(.claude, .session)
         WatchUsageWidget(.claude, .weekly)
         WatchDualPeriodWidget(.codex)
         WatchDualPeriodWidget(.claude)
+        SecondAccountWatchWidgets().body
+    }
+}
+
+// WidgetBundleBuilderの要素数を抑えるため、追加分を別のbundleにまとめる。
+struct SecondAccountWatchWidgets: WidgetBundle {
+    var body: some Widget {
+        WatchUsageWidget(.codex2, .session)
+        WatchUsageWidget(.codex2, .weekly)
+        WatchUsageWidget(.claude2, .session)
+        WatchUsageWidget(.claude2, .weekly)
+        WatchDualPeriodWidget(.codex2)
+        WatchDualPeriodWidget(.claude2)
+    }
+}
+
+struct RectangularWatchWidgets: WidgetBundle {
+    var body: some Widget {
+        WatchOverviewWidget(.codex1)
+        WatchOverviewWidget(.codex2)
+        WatchOverviewWidget(.codexBoth)
+        WatchOverviewWidget(.claude1)
+        WatchOverviewWidget(.claude2)
+        WatchOverviewWidget(.claudeBoth)
+        WatchOverviewWidget(.pair1)
+        WatchOverviewWidget(.pair2)
     }
 }

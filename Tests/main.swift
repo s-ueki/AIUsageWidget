@@ -113,3 +113,61 @@ do {
     fatalError("cancellation was not propagated")
 } catch OAuthError.cancelled {}
 print("PASS: concurrent one-shot completion and late completion after cancellation")
+
+// アカウント1の既存保存キーを維持し、全4枠のKeychain項目を分離する。
+check(Service.codex.rawValue == "codex" && Service.claude.rawValue == "claude", "legacy account keys preserved")
+check(Service.overviewAccounts == [.codex, .claude], "overview contains only account one")
+let accountQueries = Service.allCases.map { SharedKeychain.query(CredentialStore.kind, $0) }
+let accountKeys = accountQueries.compactMap { $0["acct"] as? String }
+check(accountKeys.count == 4 && Set(accountKeys).count == 4, "four distinct credential storage keys")
+for account in Service.allCases {
+    let credentialQuery = SharedKeychain.query(CredentialStore.kind, account)
+    let readingQuery = SharedKeychain.query(ReadingStore.kind, account)
+    check(credentialQuery["acct"] as? String == readingQuery["acct"] as? String, "cache uses matching account slot")
+    check(credentialQuery["svce"] as? String != readingQuery["svce"] as? String, "credentials separate from cache")
+}
+let codexSecond = try UsageClient.parse(Data(#"{"rate_limit":{"primary_window":{"used_percent":80,"limit_window_seconds":604800},"secondary_window":{"used_percent":10,"limit_window_seconds":18000}}}"#.utf8), service: .codex2)
+let claudeSecond = try UsageClient.parse(Data(#"{"five_hour":{"utilization":40},"seven_day":{"utilization":50}}"#.utf8), service: .claude2)
+check(codexSecond.service == .codex2 && claudeSecond.service == .claude2, "parser retains second account identity")
+check(WatchPeriod.session.window(in: codexSecond)?.remaining == 90, "second Codex period selected by duration")
+check(WatchPeriod.weekly.window(in: claudeSecond)?.remaining == 50, "second Claude period selected by id")
+let fourAccounts = WatchSnapshot(sentAt: Date(), readings: [codex, claude, codexSecond, claudeSecond])
+let fourDecoded = try WatchSnapshot.decode(JSONEncoder().encode(fourAccounts))
+check(fourDecoded.reading(for: .codex)?.windows[0].remaining == 68, "first account survives four-account transport")
+check(fourDecoded.reading(for: .codex2)?.windows[0].remaining == 20, "second account survives four-account transport")
+let withoutSecond = WatchSnapshot(sentAt: Date(), readings: fourAccounts.readings.filter { $0.service != .codex2 })
+let afterRemoval = try WatchSnapshot.decode(JSONEncoder().encode(withoutSecond))
+check(afterRemoval.reading(for: .codex2) == nil && afterRemoval.reading(for: .codex) != nil, "removing account two preserves account one snapshot")
+let duplicateAccount = WatchSnapshot(sentAt: Date(), readings: [codexSecond, codexSecond])
+do { _ = try WatchSnapshot.decode(JSONEncoder().encode(duplicateAccount)); fatalError("duplicate account accepted") } catch {}
+for (first, second) in [(Service.codex, Service.codex2), (.claude, .claude2)] {
+    check(OAuthConfig.of(first).clientID == OAuthConfig.of(second).clientID, "account slots use same provider OAuth configuration")
+    check(OAuthConfig.of(first).tokenURL == OAuthConfig.of(second).tokenURL, "account slots use same provider token endpoint")
+}
+let secondCredential = try OAuthClient.credential(from: ["access_token": jwt, "refresh_token": "second-refresh"], service: .codex2, previous: nil)
+check(secondCredential.accountID == "acct-1" && secondCredential.refreshToken == "second-refresh", "Codex2 account claims parsed")
+let secondRefresh = try OAuthClient.credential(from: ["access_token": "updated-second"], service: .claude2, previous: Credential(token: "old-second", accountID: "", refreshToken: "second-refresh"))
+check(secondRefresh.refreshToken == "second-refresh", "refresh retains only the supplied account refresh token")
+print("PASS: two-account storage keys, provider selection, parsing, Watch transport, removal and overview selection")
+
+// 表示情報の保存は旧資格情報と互換性を保ち、更新時の欠落でも失わない。
+let legacyCredential = try JSONDecoder().decode(Credential.self, from: Data(#"{"token":"legacy","accountID":"id"}"#.utf8))
+check(legacyCredential.accountLabel == nil && legacyCredential.plan == nil, "legacy credential decoding")
+let displayClaims = OAuthRequest.base64URL(try JSONSerialization.data(withJSONObject: ["email": "test@example.invalid", "https://api.openai.com/auth": ["chatgpt_account_id": "display-id", "chatgpt_plan_type": "plus"]]))
+let displayJWT = "e30.\(displayClaims).sig"
+let displayCredential = try OAuthClient.credential(from: ["access_token": displayJWT], service: .codex2, previous: nil)
+check(displayCredential.accountLabel == "test@example.invalid" && displayCredential.plan == "plus", "Codex email and plan claims")
+let preservedDisplay = try OAuthClient.credential(from: ["access_token": "opaque"], service: .codex2, previous: displayCredential)
+check(preservedDisplay.accountLabel == displayCredential.accountLabel && preservedDisplay.plan == "plus", "refresh preserves absent metadata")
+let freshOtherLogin = try OAuthClient.credential(from: ["access_token": "opaque"], service: .codex2, previous: nil)
+check(freshOtherLogin.accountLabel == nil && freshOtherLogin.plan == nil, "new login does not inherit old identity")
+let claudeDisplay = try OAuthClient.credential(from: ["access_token": "opaque", "account": ["email_address": "claude@example.invalid"], "organization": ["organization_type": "claude_max"]], service: .claude2, previous: nil)
+check(claudeDisplay.accountLabel == "claude@example.invalid" && AccountDisplay.planName(claudeDisplay.plan) == "Max", "Claude token display metadata")
+let claudeProfile = AccountDisplay.claudeProfile(["account": ["email": "profile@example.invalid"], "organization": ["organization_type": "claude_pro"]])
+check(claudeProfile.account == "profile@example.invalid" && AccountDisplay.planName(claudeProfile.plan) == "Pro", "Claude profile metadata")
+check(AccountDisplay.planName(nil) == "プラン未取得" && AccountDisplay.claudeProfile([:]).plan == nil, "unknown plan stays unknown")
+let usageWithPlan = try UsageClient.parse(Data(#"{"plan_type":"pro","rate_limit":{"primary_window":{"used_percent":10}}}"#.utf8), service: .codex)
+check(usageWithPlan.plan == "pro", "current usage plan parsed")
+let displayWatchPacket = try JSONEncoder().encode(fourAccounts)
+check(!String(decoding: displayWatchPacket, as: UTF8.self).contains("example.invalid"), "account emails not added to Watch snapshots")
+print("PASS: account display metadata, legacy credentials, refresh preservation and missing profiles")

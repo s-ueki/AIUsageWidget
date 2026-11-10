@@ -1,5 +1,8 @@
 import SwiftUI
 import WidgetKit
+#if os(macOS)
+import AppKit
+#endif
 
 @main
 struct AIUsageApp: App {
@@ -49,20 +52,29 @@ struct Dashboard: View {
     }
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    ForEach(Service.allCases) { service in
-                        VStack(alignment: .leading, spacing: 12) {
-                            UsageCard(service: service, reading: readings[service], error: errors[service])
-                            Button("認証情報を設定") { editing = service }
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        if geometry.size.width >= 640 {
+                            HStack(alignment: .top, spacing: 20) {
+                                accountColumn([.codex, .codex2])
+                                accountColumn([.claude, .claude2])
+                            }
+                        } else {
+                            accountColumn(Service.allCases)
                         }
-                        .padding().background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
-                    }
-                    Text("この端末から直接取得します。更新時刻は端末のタイムゾーンで表示します。ウィジェットの自動更新時刻はOSが決定します。")
-                        .font(.caption).foregroundStyle(.secondary)
-                }.padding()
+                        Text("この端末から直接取得します。更新時刻は端末のタイムゾーンで表示します。ウィジェットの自動更新時刻はOSが決定します。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }.padding()
+                }
             }
             .navigationTitle("AI使用量")
+            .onOpenURL { url in
+                guard url.scheme == "aiusage-widget", url.host == "dashboard" else { return }
+                #if os(macOS)
+                NSApplication.shared.activate(ignoringOtherApps: true)
+                #endif
+            }
             .toolbar { Button { Task { await refresh() } } label: {
                 if refreshing { ProgressView() } else { Label("更新", systemImage: "arrow.clockwise") }
             }.disabled(refreshing) }
@@ -79,6 +91,21 @@ struct Dashboard: View {
             }
         }.frame(minWidth: 300, minHeight: 440)
     }
+    private func accountColumn(_ services: [Service]) -> some View {
+        VStack(spacing: 20) {
+            ForEach(services) { service in
+                VStack(alignment: .leading, spacing: 12) {
+                    UsageCard(service: service, reading: readings[service], error: errors[service])
+                    Button("認証情報を設定") { editing = service }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .top)
+    }
+
     @MainActor func refresh() async {
         guard !refreshing else { return }
         refreshing = true
@@ -160,6 +187,8 @@ struct CredentialEditor: View {
     private var settingsForm: some View {
             Form {
                 Section("Webでログイン") {
+                    Text(service.title + "に登録するアカウントでログインしてください。")
+                        .font(.callout)
                     Text("\(OAuthConfig.of(service).loginHost)のログイン画面を開き、ログイン後にアクセストークンと更新用トークンを自動で保存します。期限切れ時も自動で更新します。")
                     Button {
                         Task { await webLogin { try await login.start(service) } }

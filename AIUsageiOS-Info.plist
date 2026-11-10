@@ -46,5 +46,18 @@
 	<array>
 		<string>com.s-ueki7.aiusage.ios.refresh</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.s-ueki7.aiusage.widget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aiusage-widget</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+	</array>
 </dict>
 </plist>
