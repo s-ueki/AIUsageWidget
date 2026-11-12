@@ -109,11 +109,9 @@ struct Dashboard: View {
     @MainActor func refresh() async {
         guard !refreshing else { return }
         refreshing = true
-        defer {
-            refreshing = false
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        defer { refreshing = false }
         #if os(iOS)
+        // ウィジェットの再読み込みはPhoneWatchBridge.refreshが行う。
         errors = await PhoneWatchBridge.shared.refresh()
         for service in Service.allCases { readings[service] = ReadingStore.read(service) }
         #else
@@ -125,6 +123,7 @@ struct Dashboard: View {
                 errors.removeValue(forKey: service)
             } catch { errors[service] = error.localizedDescription }
         }
+        WidgetCenter.shared.reloadAllTimelines()
         #endif
     }
 }

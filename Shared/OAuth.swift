@@ -187,9 +187,84 @@ enum OAuthClient {
     }
 }
 
+/// プロセス内の同一キーの処理を共有し、呼び出し元ごとにキャンセルする。
+/// 通常は最後の待機者が離れたときに停止する。認証更新は保存完了まで継続できる。
+/// 世代IDで古い処理の完了を区別する。
+actor SharedAsyncRequests<Key: Hashable & Sendable, Value: Sendable> {
+    private struct Request {
+        let generation: UUID
+        let task: Task<Void, Never>
+        var waiters: [UUID: CheckedContinuation<Value, Error>]
+    }
+    private var requests: [Key: Request] = [:]
+    private let cancelWhenUnobserved: Bool
+
+    init(cancelWhenUnobserved: Bool = true) {
+        self.cancelWhenUnobserved = cancelWhenUnobserved
+    }
+
+    func waiterCount(for key: Key) -> Int { requests[key]?.waiters.count ?? 0 }
+
+    func value(for key: Key, operation: @escaping @Sendable () async throws -> Value) async throws -> Value {
+        try Task.checkCancellation()
+        let waiter = UUID()
+        let value = try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                if requests[key] != nil {
+                    requests[key]?.waiters[waiter] = continuation
+                } else {
+                    let generation = UUID()
+                    let task = Task {
+                        let result: Result<Value, Error>
+                        do { result = .success(try await operation()) }
+                        catch { result = .failure(error) }
+                        self.finish(key, generation: generation, result: result)
+                    }
+                    requests[key] = Request(generation: generation, task: task, waiters: [waiter: continuation])
+                }
+            }
+        } onCancel: {
+            Task { await self.cancel(key, waiter: waiter) }
+        }
+        // 完了とキャンセルが競合した場合も、キャンセルされた呼び出し元には結果を返さない。
+        try Task.checkCancellation()
+        return value
+    }
+
+    private func cancel(_ key: Key, waiter: UUID) {
+        guard var request = requests[key], let continuation = request.waiters.removeValue(forKey: waiter) else { return }
+        if request.waiters.isEmpty && cancelWhenUnobserved {
+            requests.removeValue(forKey: key)
+            request.task.cancel()
+        } else {
+            requests[key] = request
+        }
+        continuation.resume(throwing: CancellationError())
+    }
+
+    private func finish(_ key: Key, generation: UUID, result: Result<Value, Error>) {
+        guard let request = requests[key], request.generation == generation else { return }
+        requests.removeValue(forKey: key)
+        for continuation in request.waiters.values { continuation.resume(with: result) }
+    }
+}
+
 /// 保存済みの認証情報で使用量を取得します。期限切れ間近・401時は更新用トークンで自動更新します。
 enum UsageFetcher {
+    /// ウィジェットが通信せずに保存済みの数値を使う期間。
+    static let widgetCacheAge: TimeInterval = 5 * 60
+
+    private static let inFlight = SharedAsyncRequests<Service, UsageReading>()
+    // 更新送信後のキャンセルで、ローテーション済みのトークンを失わないようにする。
+    // 待機者が0人でも登録を維持し、新しい要求にも同じ更新を共有する。
+    // OSによるプロセスの停止・終了や通信断まで防ぐものではない。
+    private static let tokenRefreshes = SharedAsyncRequests<Service, Credential>(cancelWhenUnobserved: false)
+
     static func fetch(_ service: Service) async throws -> UsageReading {
+        try await inFlight.value(for: service) { try await fetchNow(service) }
+    }
+
+    private static func fetchNow(_ service: Service) async throws -> UsageReading {
         guard var credential = CredentialStore.read(service) else { throw UsageError.noCredential }
         if credential.needsRefresh { credential = try await refresh(credential, service) }
         let reading: UsageReading
@@ -222,14 +297,23 @@ enum UsageFetcher {
     }
 
     static func refresh(_ credential: Credential, _ service: Service) async throws -> Credential {
-        do {
-            let updated = try await OAuthClient.refresh(credential, service: service)
-            try CredentialStore.save(updated, for: service)
-            return updated
-        } catch {
-            // アプリとウィジェットが同時に更新した場合、先に保存された新しいトークンを使います。
-            if let latest = CredentialStore.read(service), latest.token != credential.token { return latest }
-            throw error
+        try await tokenRefreshes.value(for: service) {
+            // 待機中に別の取得が更新済みなら、その認証情報を再利用する。
+            guard let current = CredentialStore.read(service) else { throw UsageError.noCredential }
+            if current.token != credential.token || current.refreshToken != credential.refreshToken { return current }
+            do {
+                let updated = try await OAuthClient.refresh(current, service: service)
+                // ログアウトや別アカウントへのログイン後に古い認証情報を書き戻さない。
+                guard let latest = CredentialStore.read(service) else { throw UsageError.noCredential }
+                guard latest.token == current.token, latest.refreshToken == current.refreshToken else { return latest }
+                // リクエストからKeychain保存までを共有Task内で完了させる。
+                try CredentialStore.save(updated, for: service)
+                return updated
+            } catch {
+                // 別プロセスで更新済みの場合の救済。プロセス間の完全な排他ではない。
+                if let latest = CredentialStore.read(service), latest.token != current.token { return latest }
+                throw error
+            }
         }
     }
 }

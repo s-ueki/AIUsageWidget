@@ -179,7 +179,7 @@ struct WatchOverviewView: View {
                 .accessibilityElement(children: .combine)
             }
             Group {
-                if let oldest = entry.snapshot?.readings.filter { selection.services.contains($0.service) }.map(\.fetchedAt).min() {
+                if let oldest = entry.snapshot?.readings.filter({ selection.services.contains($0.service) }).map(\.fetchedAt).min() {
                     Text("取得 " + oldest.formatted(.dateTime.hour().minute())
                          + (entry.date.timeIntervalSince(oldest) > 3600 ? "・更新待ち" : ""))
                 } else {

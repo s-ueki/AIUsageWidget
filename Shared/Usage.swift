@@ -25,6 +25,11 @@ struct UsageReading: Codable {
     var windows: [UsageWindow]
     var fetchedAt: Date
     var plan: String? = nil
+    /// 端末の時計が戻された場合（取得日時が未来）は新しいとみなさない。
+    func isFresh(within age: TimeInterval, now: Date = Date()) -> Bool {
+        let elapsed = now.timeIntervalSince(fetchedAt)
+        return elapsed >= 0 && elapsed < age
+    }
 }
 
 enum UsageError: LocalizedError {
@@ -65,6 +70,13 @@ enum UsageClient {
         return try parse(data, service: service)
     }
 
+    /// 上限超過（100超）は残量0%として扱う。枠ごと捨てると「制限なし」と誤表示されるため。
+    /// 負の値・数値以外は不正な応答として捨てる。
+    static func clampedUsage(_ value: Any?) -> Double? {
+        guard let used = value as? Double, used.isFinite, used >= 0 else { return nil }
+        return min(100, used)
+    }
+
     static func parse(_ data: Data, service: Service) throws -> UsageReading {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw UsageError.invalidResponse
@@ -72,8 +84,8 @@ enum UsageClient {
         var windows: [UsageWindow] = []
         if service.isCodex, let limit = root["rate_limit"] as? [String: Any] {
             for (key, fallback) in [("primary_window", "セッション"), ("secondary_window", "週間")] {
-                guard let row = limit[key] as? [String: Any], let used = row["used_percent"] as? Double,
-                      used.isFinite, (0...100).contains(used) else { continue }
+                guard let row = limit[key] as? [String: Any],
+                      let used = clampedUsage(row["used_percent"]) else { continue }
                 let seconds = row["limit_window_seconds"] as? Double
                 let title = seconds == 18000 ? "5時間" : seconds == 604800 ? "週間" : fallback
                 let reset = (row["reset_at"] as? Double).map { Date(timeIntervalSince1970: $0) }
@@ -82,8 +94,8 @@ enum UsageClient {
             }
         } else if !service.isCodex {
             for (key, title) in [("five_hour", "5時間"), ("seven_day", "週間")] {
-                guard let row = root[key] as? [String: Any], let used = row["utilization"] as? Double,
-                      used.isFinite, (0...100).contains(used) else { continue }
+                guard let row = root[key] as? [String: Any],
+                      let used = clampedUsage(row["utilization"]) else { continue }
                 var reset: Date?
                 if let string = row["resets_at"] as? String {
                     let formatter = ISO8601DateFormatter()

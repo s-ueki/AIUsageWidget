@@ -38,6 +38,8 @@ struct UsageProvider: TimelineProvider {
         guard CredentialStore.read(service) != nil else {
             return (service, cached, "アプリで認証情報を設定")
         }
+        // アプリや他のウィジェットが取得した直後は通信せず、保存済みの数値を使う。
+        if let cached, cached.isFresh(within: UsageFetcher.widgetCacheAge) { return (service, cached, nil) }
         do {
             let reading = try await UsageFetcher.fetch(service)
             try ReadingStore.save(reading)

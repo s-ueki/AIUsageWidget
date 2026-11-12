@@ -11,10 +11,109 @@ check(codex.windows[1].reset == nil, "unknown reset")
 let claude = try UsageClient.parse(Data(#"{"five_hour":{"utilization":17.5,"resets_at":"2026-10-12T12:00:00.000Z"},"seven_day":{"utilization":95,"resets_at":"2026-10-15T12:00:00Z"}}"#.utf8), service: .claude)
 check(claude.windows[0].remaining == 82.5, "fractional utilization")
 check(claude.windows.allSatisfy { $0.reset != nil }, "ISO date variants")
-for payload in ["{}", "{\"five_hour\":null}", "{\"five_hour\":{\"utilization\":120}}"] {
+for payload in ["{}", "{\"five_hour\":null}", "{\"five_hour\":{\"utilization\":-5}}", "{\"five_hour\":{\"utilization\":\"120\"}}"] {
     do { _ = try UsageClient.parse(Data(payload.utf8), service: .claude); fatalError("invalid data accepted") }
     catch {}
 }
+// 上限超過は残量0%。枠を捨てて「制限なし」と誤表示しない。
+let overClaude = try UsageClient.parse(Data(#"{"five_hour":{"utilization":120},"seven_day":{"utilization":40}}"#.utf8), service: .claude)
+check(overClaude.windows.count == 2 && WatchPeriod.session.window(in: overClaude)?.remaining == 0, "Claude over-limit is 0% remaining")
+check(!WatchPeriod.session.limitAbsent(in: overClaude), "Claude over-limit is not an absent limit")
+let overCodex = try UsageClient.parse(Data(#"{"rate_limit":{"primary_window":{"used_percent":104.5,"limit_window_seconds":18000},"secondary_window":{"used_percent":30,"limit_window_seconds":604800}}}"#.utf8), service: .codex)
+check(WatchPeriod.session.window(in: overCodex)?.remaining == 0 && !WatchPeriod.session.limitAbsent(in: overCodex), "Codex over-limit is 0% remaining")
+_ = try WatchSnapshot.decode(JSONEncoder().encode(WatchSnapshot(sentAt: Date(), readings: [overClaude, overCodex])))
+// ウィジェットのキャッシュ再利用判定。
+let freshness = UsageReading(service: .codex, windows: codex.windows, fetchedAt: Date(timeIntervalSince1970: 1000))
+check(freshness.isFresh(within: 300, now: Date(timeIntervalSince1970: 1299)), "recent reading is reused")
+check(!freshness.isFresh(within: 300, now: Date(timeIntervalSince1970: 1300)), "old reading is refetched")
+check(!freshness.isFresh(within: 300, now: Date(timeIntervalSince1970: 900)), "future-dated reading is refetched")
+// 通信やKeychainを使わず、実際の共有コーディネータを検証する。
+actor RequestGate {
+    var starts = 0
+    var cancellations = 0
+    func recordCancellation() { cancellations += 1 }
+    private var pending: [Int: CheckedContinuation<Int, Error>] = [:]
+    func run() async throws -> Int {
+        starts += 1
+        let id = starts
+        return try await withCheckedThrowingContinuation { pending[id] = $0 }
+    }
+    func complete(_ id: Int, _ result: Result<Int, Error>) { pending.removeValue(forKey: id)?.resume(with: result) }
+}
+enum RequestTestError: Error { case expected }
+let shared = SharedAsyncRequests<String, Int>()
+let gate = RequestGate()
+let callers = (0..<20).map { _ in Task { try await shared.value(for: "usage") { try await gate.run() } } }
+while await shared.waiterCount(for: "usage") < 20 { await Task.yield() }
+while await gate.starts < 1 { await Task.yield() }
+let starts = await gate.starts
+check(starts == 1, "20 callers perform exactly one operation")
+callers[0].cancel()
+do { _ = try await callers[0].value; fatalError("cancelled waiter succeeded") } catch is CancellationError {} catch { fatalError("unexpected cancellation error") }
+await gate.complete(1, .success(42))
+for caller in callers.dropFirst() { let value = try await caller.value; check(value == 42, "other callers survive cancellation") }
+let afterSuccess = try await shared.value(for: "usage") { 43 }
+check(afterSuccess == 43, "new operation starts after success")
+do { _ = try await shared.value(for: "usage") { throw RequestTestError.expected }; fatalError("failure lost") } catch RequestTestError.expected {}
+let afterFailure = try await shared.value(for: "usage") { 44 }
+check(afterFailure == 44, "new operation starts after failure")
+// 全員キャンセル時は下流の処理もキャンセルされる。
+let cancelledWork = Task {
+    try await shared.value(for: "cancel") {
+        do { try await Task.sleep(nanoseconds: 60_000_000_000); return 0 }
+        catch { await gate.recordCancellation(); throw error }
+    }
+}
+while await shared.waiterCount(for: "cancel") < 1 { await Task.yield() }
+cancelledWork.cancel()
+do { _ = try await cancelledWork.value; fatalError("cancelled caller succeeded") } catch is CancellationError {}
+while await gate.cancellations < 1 { await Task.yield() }
+let remainingWaiters = await shared.waiterCount(for: "cancel")
+check(remainingWaiters == 0, "last cancellation stops operation and removes waiters")
+// キャンセルを無視する古い処理が後から完了しても、新しい世代を消さない。
+let old = Task { try await shared.value(for: "generation") { try await gate.run() } }
+while await gate.starts < 2 { await Task.yield() }
+old.cancel()
+do { _ = try await old.value; fatalError("old caller succeeded") } catch is CancellationError {}
+let replacement = Task { try await shared.value(for: "generation") { try await gate.run() } }
+while await gate.starts < 3 { await Task.yield() }
+await gate.complete(2, .success(1))
+await gate.complete(3, .success(2))
+let replacementValue = try await replacement.value
+check(replacementValue == 2, "late completion cannot replace new generation")
+print("PASS: shared request count, independent cancellation, retry after completion, generation isolation")
+// 認証更新は、最後の呼び出し元のキャンセル後も保存まで継続する。
+actor RefreshProbe {
+    var saved = false
+    func save() { saved = true }
+}
+let protectedRefresh = SharedAsyncRequests<String, Int>(cancelWhenUnobserved: false)
+let refreshGate = RequestGate()
+let refreshProbe = RefreshProbe()
+let firstRefresh = Task {
+    try await protectedRefresh.value(for: "token") {
+        let result = try await refreshGate.run()
+        try Task.checkCancellation()
+        await refreshProbe.save()
+        return result
+    }
+}
+while await refreshGate.starts < 1 { await Task.yield() }
+firstRefresh.cancel()
+do { _ = try await firstRefresh.value; fatalError("cancelled refresh waiter succeeded") } catch is CancellationError {}
+// 待機者0人を経ても、次の要求は同じ送信済み更新に合流する。
+let nextRefresh = Task {
+    try await protectedRefresh.value(for: "token") { fatalError("duplicate refresh started") }
+}
+while await protectedRefresh.waiterCount(for: "token") < 1 { await Task.yield() }
+await refreshGate.complete(1, .success(55))
+let newToken = try await nextRefresh.value
+let saved = await refreshProbe.saved
+let refreshStarts = await refreshGate.starts
+check(saved && newToken == 55 && refreshStarts == 1, "refresh survives cancellation and saves once")
+let laterRefresh = try await protectedRefresh.value(for: "token") { 56 }
+check(laterRefresh == 56, "protected refresh registration clears after saving")
+print("PASS: protected token refresh survives cancellation, shares work and completes save")
 // OAuth（Webログイン）
 check(OAuthRequest.challenge("dBjftJeZ4CVP-mJ92K-3KxtT7UONBB0Igr2Kgq8SJzQ") == "_1xsJRlgYjIvx4ipCFPZvXlojONzf9Q4WfBBI3MXRnw", "PKCE S256 (openssl計算値と一致)")
 let request = OAuthRequest(service: .codex, redirectURI: "http://localhost:1455/auth/callback")
