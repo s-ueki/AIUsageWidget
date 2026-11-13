@@ -2,6 +2,8 @@ import Foundation
 
 /// Watchへは表示データだけを渡す。認証情報は含めない。
 struct WatchSnapshot: Codable {
+    /// Watchアプリと文字盤で共通のデータ鮮度判定（90分）。
+    static let staleInterval: TimeInterval = 90 * 60
     static let messageKey = "aiUsageSnapshot"
     static let requestKey = "requestAIUsageSnapshot"
     var version = 1

@@ -14,8 +14,8 @@ struct WatchProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<WatchEntry>) -> Void) {
         let now = Date()
         let snapshot = WatchStore.read()
-        // 取得から1時間経過したとき、データが古いことを表示へ反映する。
-        let boundaries = snapshot?.readings.map { $0.fetchedAt.addingTimeInterval(3601) }.filter { $0 > now } ?? []
+        // 取得から90分経過したとき、データが古いことを表示へ反映する。
+        let boundaries = snapshot?.readings.map { $0.fetchedAt.addingTimeInterval(WatchSnapshot.staleInterval + 1) }.filter { $0 > now } ?? []
         let entries = ([now] + boundaries).sorted().map { WatchEntry(date: $0, snapshot: snapshot) }
         completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(30 * 60))))
     }
@@ -28,7 +28,7 @@ struct WatchComplicationView: View {
     @Environment(\.widgetFamily) private var family
     private var reading: UsageReading? { entry.snapshot?.reading(for: service) }
     private var window: UsageWindow? { period.window(in: reading) }
-    private var stale: Bool { reading.map { entry.date.timeIntervalSince($0.fetchedAt) > 3600 } ?? false }
+    private var stale: Bool { reading.map { entry.date.timeIntervalSince($0.fetchedAt) > WatchSnapshot.staleInterval } ?? false }
     private var amount: String { window.map { "\(Int($0.remaining.rounded()))%" } ?? "—" }
     private var name: String { service.title }
 
@@ -63,7 +63,7 @@ struct WatchComplicationView: View {
             }
         }
         .containerBackground(for: .widget) { Color.black }
-        .accessibilityLabel("\(name)、\(period.title)、残り\(amount)\(stale ? "、1時間以上前のデータ" : "")")
+        .accessibilityLabel("\(name)、\(period.title)、残り\(amount)\(stale ? "、90分以上前のデータ" : "")")
     }
 }
 
@@ -159,7 +159,7 @@ struct WatchOverviewView: View {
                 let reading = entry.snapshot?.reading(for: service)
                 let session = WatchPeriod.session.window(in: reading)
                 let weekly = WatchPeriod.weekly.window(in: reading)
-                let stale = reading.map { entry.date.timeIntervalSince($0.fetchedAt) > 3600 } ?? false
+                let stale = reading.map { entry.date.timeIntervalSince($0.fetchedAt) > WatchSnapshot.staleInterval } ?? false
                 HStack(spacing: 7) {
                     if selection.services.count > 1 {
                         Text(service.title)
@@ -181,7 +181,7 @@ struct WatchOverviewView: View {
             Group {
                 if let oldest = entry.snapshot?.readings.filter({ selection.services.contains($0.service) }).map(\.fetchedAt).min() {
                     Text("取得 " + oldest.formatted(.dateTime.hour().minute())
-                         + (entry.date.timeIntervalSince(oldest) > 3600 ? "・更新待ち" : ""))
+                         + (entry.date.timeIntervalSince(oldest) > WatchSnapshot.staleInterval ? "・更新待ち" : ""))
                 } else {
                     Text("iPhoneで使用量を更新")
                 }
@@ -287,7 +287,7 @@ struct DualPeriodGauge: View {
         .accessibilityLabel(service.title
                             + (sessionLimitAbsent ? "、5時間制限なし" : "、5時間の残量" + amount(sessionRemaining))
                             + (weeklyLimitAbsent ? "、週間制限なし" : "、週間の残量" + amount(weeklyRemaining))
-                            + (stale ? "、1時間以上前のデータ" : ""))
+                            + (stale ? "、90分以上前のデータ" : ""))
     }
 }
 
@@ -304,7 +304,7 @@ struct WatchDualPeriodView: View {
                         weeklyRemaining: weeklyWindow?.remaining,
                         sessionLimitAbsent: WatchPeriod.session.limitAbsent(in: reading),
                         weeklyLimitAbsent: WatchPeriod.weekly.limitAbsent(in: reading),
-                        stale: reading.map { entry.date.timeIntervalSince($0.fetchedAt) > 3600 } ?? false)
+                        stale: reading.map { entry.date.timeIntervalSince($0.fetchedAt) > WatchSnapshot.staleInterval } ?? false)
             .containerBackground(for: .widget) { Color.black }
     }
 }

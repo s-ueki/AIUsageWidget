@@ -7,6 +7,8 @@ final class WatchDelegate: NSObject, WKApplicationDelegate {
             for task in backgroundTasks {
                 if let connectivity = task as? WKWatchConnectivityRefreshBackgroundTask {
                     WatchReceiver.shared.handle(connectivity)
+                } else if let refresh = task as? WKApplicationRefreshBackgroundTask {
+                    WatchReceiver.shared.handle(refresh)
                 } else {
                     task.setTaskCompletedWithSnapshot(false)
                 }
@@ -50,8 +52,8 @@ struct WatchDashboard: View {
                             }
                             Text("取得 " + reading.fetchedAt.formatted(.dateTime.month().day().hour().minute()))
                                 .font(.caption2).foregroundStyle(.secondary)
-                            if Date().timeIntervalSince(reading.fetchedAt) > 3600 {
-                                Text("1時間以上前のデータ").font(.caption2).foregroundStyle(.orange)
+                            if Date().timeIntervalSince(reading.fetchedAt) > WatchSnapshot.staleInterval {
+                                Text("90分以上前のデータ").font(.caption2).foregroundStyle(.orange)
                             }
                         } else {
                             Text("未取得").foregroundStyle(.secondary)
