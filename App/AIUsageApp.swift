@@ -137,6 +137,8 @@ struct CredentialEditor: View {
         get { stateError.wrappedValue }
         nonmutating set { stateError.wrappedValue = newValue }
     }
+    private var stateLoginOperation = SwiftUI.State<LoginOperation>(initialValue: LoginOperation())
+    private var loginOperation: LoginOperation { stateLoginOperation.wrappedValue }
     private var stateLogin = SwiftUI.State<WebLogin>(initialValue: WebLogin())
     private var login: WebLogin { stateLogin.wrappedValue }
     private var stateLoggingIn = SwiftUI.State<Bool>(initialValue: false)
@@ -167,7 +169,7 @@ struct CredentialEditor: View {
             Divider()
             HStack {
                 Spacer()
-                Button("閉じる") { login.cancel(); dismiss() }
+                Button("閉じる") { cancelLogin(); dismiss() }
                     .keyboardShortcut(.cancelAction)
             }
             .padding(16)
@@ -177,10 +179,15 @@ struct CredentialEditor: View {
         NavigationStack {
             settingsForm
                 .navigationTitle(service.title)
-                .toolbar { Button("閉じる") { login.cancel(); dismiss() } }
+                .toolbar { Button("閉じる") { cancelLogin(); dismiss() } }
         }
         .frame(minWidth: 360, minHeight: 560)
         #endif
+    }
+
+    private func cancelLogin() {
+        loginOperation.cancel()
+        login.cancel()
     }
 
     private var settingsForm: some View {
@@ -211,6 +218,7 @@ struct CredentialEditor: View {
                     .font(.caption).foregroundStyle(.secondary)
                 if let error { Text(error).foregroundStyle(.red) }
                 Button("認証情報と表示データを削除", role: .destructive) {
+                    cancelLogin()
                     do {
                         try CredentialStore.delete(service)
                         ReadingStore.clear(service)
@@ -222,12 +230,17 @@ struct CredentialEditor: View {
                     } catch { self.error = error.localizedDescription }
                 }
             }
+            .onDisappear { cancelLogin() }
     }
     @MainActor func webLogin(_ action: () async throws -> Credential) async {
         loggingIn = true
         defer { loggingIn = false }
         error = nil
-        do { store(try await action()) } catch {
+        do {
+            try await loginOperation.run(operation: action) { credential in store(credential) }
+        } catch is CancellationError {
+            // 削除・画面終了によって無効になった結果は保存もエラー表示もしない。
+        } catch {
             showsPaste = login.pending != nil
             self.error = error.localizedDescription
         }

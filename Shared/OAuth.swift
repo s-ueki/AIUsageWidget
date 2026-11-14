@@ -99,8 +99,30 @@ enum OAuthClient {
             if let code = value("code"), !code.isEmpty { return (code, value("state")) }
         }
         guard !text.isEmpty, !text.contains("://"), !text.contains(" ") else { throw OAuthError.invalidCallback }
-        let parts = text.split(separator: "#", maxSplits: 1).map(String.init)
-        return (parts[0], parts.count > 1 ? parts[1] : nil)
+        let parts = text.split(separator: "#", omittingEmptySubsequences: false).map(String.init)
+        guard parts.count <= 2, let code = parts.first, !code.isEmpty,
+              !text.contains(where: { $0.isWhitespace }),
+              parts.count == 1 || !parts[1].isEmpty else { throw OAuthError.invalidCallback }
+        return (code, parts.count == 2 ? parts[1] : nil)
+    }
+
+    /// 自動コールバックは、ブラウザを閉じる前に要求との対応と形式を確認する。
+    /// エラー応答もstateが一致した場合に限り、そのログインを終了できる。
+    static func acceptsAutomaticCallback(_ input: String, request: OAuthRequest) -> Bool {
+        guard let url = URLComponents(string: input),
+              let expected = URLComponents(string: request.redirectURI),
+              url.scheme == expected.scheme, url.host == expected.host,
+              url.path == expected.path,
+              // HTTPリクエスト行から組み立てたURLはポートを省略する。
+              url.port == nil || url.port == expected.port,
+              url.user == nil, url.password == nil, url.fragment == nil,
+              let items = url.queryItems else { return false }
+        let states = items.filter { $0.name == "state" }
+        guard states.count == 1, states[0].value == request.state else { return false }
+        let codes = items.filter { $0.name == "code" }
+        let errors = items.filter { $0.name == "error" }
+        if codes.count == 1, errors.isEmpty { return codes[0].value?.isEmpty == false }
+        return codes.isEmpty && errors.count == 1 && errors[0].value?.isEmpty == false
     }
 
     static func exchange(callback: String, request: OAuthRequest) async throws -> Credential {
@@ -381,5 +403,23 @@ enum AccountDisplay {
             throw UsageError.invalidResponse
         }
         return claudeProfile(json)
+    }
+}
+
+/// 画面を閉じる・削除する・次の操作を始めると、古い非同期結果は保存させない。
+@MainActor
+final class LoginOperation {
+    private var generation = UUID()
+
+    func cancel() { generation = UUID() }
+
+    func run<Value>(operation: () async throws -> Value, commit: (Value) throws -> Void) async throws {
+        let id = UUID()
+        generation = id
+        let value = try await operation()
+        try Task.checkCancellation()
+        guard generation == id else { throw CancellationError() }
+        // 検証から保存までMainActor上で中断しない。
+        try commit(value)
     }
 }

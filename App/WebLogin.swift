@@ -78,6 +78,7 @@ final class LoopbackServer {
 /// ブラウザ画面でログインし、受け取ったコードをトークンに交換します。
 @MainActor
 final class WebLogin: NSObject, ASWebAuthenticationPresentationContextProviding {
+    private var generation = UUID()
     private var session: ASWebAuthenticationSession?
     private var continuation: CheckedContinuation<String, Error>?
     /// 自動で戻れなかった場合に、貼り付けたURL/コードで完了できるよう直近の要求を保持します。
@@ -85,20 +86,29 @@ final class WebLogin: NSObject, ASWebAuthenticationPresentationContextProviding 
 
     func start(_ service: Service) async throws -> Credential {
         cancel()
+        let id = generation
         let config = OAuthConfig.of(service)
         let server = try LoopbackServer(port: config.port, path: config.callbackPath)
         defer { server.stop() }
         let port = try await server.start()
+        guard generation == id else { throw OAuthError.cancelled }
         let request = OAuthRequest(service: service, redirectURI: config.redirectURI(port: port))
         pending = request
         let callback: String = try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             server.onCallback = { [weak self] url in
-                Task { @MainActor [weak self] in self?.finish(.success(url)) }
+                Task { @MainActor [weak self] in
+                    guard let self, self.generation == id,
+                          OAuthClient.acceptsAutomaticCallback(url, request: request) else { return }
+                    self.finish(.success(url))
+                }
             }
             // リダイレクトはlocalhostのサーバーで受け取るため、このスキームは使われません。
             let session = ASWebAuthenticationSession(url: request.authorizeURL, callbackURLScheme: "aiusage-login") { [weak self] _, _ in
-                Task { @MainActor [weak self] in self?.finish(.failure(OAuthError.cancelled)) }
+                Task { @MainActor [weak self] in
+                    guard let self, self.generation == id else { return }
+                    self.finish(.failure(OAuthError.cancelled))
+                }
             }
             session.presentationContextProvider = self
             // 前回のブラウザログインを使い回さず、登録するアカウントを選べるようにする。
@@ -106,24 +116,32 @@ final class WebLogin: NSObject, ASWebAuthenticationPresentationContextProviding 
             self.session = session
             if !session.start() { finish(.failure(OAuthError.cancelled)) }
         }
+        guard generation == id else { throw OAuthError.cancelled }
         return try await complete(callback)
     }
 
     func complete(_ callback: String) async throws -> Credential {
         guard let pending else { throw OAuthError.noPendingLogin }
+        let id = generation
         let credential = try await OAuthClient.exchange(callback: callback, request: pending)
+        guard generation == id else { throw OAuthError.cancelled }
         self.pending = nil
         return credential
     }
 
-    func cancel() { finish(.failure(OAuthError.cancelled)) }
+    func cancel() {
+        generation = UUID()
+        pending = nil
+        finish(.failure(OAuthError.cancelled))
+    }
 
     private func finish(_ result: Result<String, Error>) {
         let session = self.session
         self.session = nil
+        let continuation = self.continuation
+        self.continuation = nil
         session?.cancel()
         continuation?.resume(with: result)
-        continuation = nil
     }
 
     nonisolated func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {

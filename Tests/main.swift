@@ -270,3 +270,55 @@ check(usageWithPlan.plan == "pro", "current usage plan parsed")
 let displayWatchPacket = try JSONEncoder().encode(fourAccounts)
 check(!String(decoding: displayWatchPacket, as: UTF8.self).contains("example.invalid"), "account emails not added to Watch snapshots")
 print("PASS: account display metadata, legacy credentials, refresh preservation and missing profiles")
+
+// 不正な手動入力はクラッシュせず拒否し、従来のraw code入力は維持する。
+for input in ["#", "##", "#state", "code#", "code#state#extra", "code\nstate", "   "] {
+    do { _ = try OAuthClient.parseCallback(input); fatalError("malformed paste accepted: \(input)") }
+    catch OAuthError.invalidCallback {}
+}
+let rawCallback = try OAuthClient.parseCallback("raw-code")
+check(rawCallback.code == "raw-code", "raw code fallback preserved")
+let automatic = OAuthRequest(service: .codex, redirectURI: "http://localhost:1455/auth/callback")
+let goodCallback = "http://localhost/auth/callback?code=abc&state=" + automatic.state
+check(OAuthClient.acceptsAutomaticCallback(goodCallback, request: automatic), "matching callback accepted")
+check(OAuthClient.acceptsAutomaticCallback("http://localhost/auth/callback?error=access_denied&state=" + automatic.state, request: automatic), "matching provider denial accepted")
+for input in [
+    "http://localhost/auth/callback", "http://localhost/auth/callback?code=abc",
+    "http://localhost/auth/callback?code=abc&state=wrong",
+    goodCallback + "&state=" + automatic.state,
+    goodCallback + "&code=second", goodCallback + "&error=denied",
+    "http://localhost/other?code=abc&state=" + automatic.state,
+    "http://attacker.invalid/auth/callback?code=abc&state=" + automatic.state,
+    "http://localhost/auth/callback?error=access_denied",
+    "http://localhost/auth/callback?code=&state=" + automatic.state
+] {
+    check(!OAuthClient.acceptsAutomaticCallback(input, request: automatic), "invalid automatic callback ignored")
+}
+// 不正な要求の後でも同じ正しい要求を受け取れる（判定はログインを消費しない）。
+check(OAuthClient.acceptsAutomaticCallback(goodCallback, request: automatic), "valid callback survives invalid requests")
+
+@MainActor final class LoginCommitProbe {
+    var values: [Int] = []
+}
+let loginOperation = await MainActor.run { LoginOperation() }
+let commitProbe = await MainActor.run { LoginCommitProbe() }
+let loginGate = RequestGate()
+let deletedLogin = Task { @MainActor in
+    try await loginOperation.run(operation: { try await loginGate.run() }, commit: { commitProbe.values.append($0) })
+}
+while await loginGate.starts < 1 { await Task.yield() }
+await MainActor.run { loginOperation.cancel() }
+await loginGate.complete(1, .success(1))
+do { try await deletedLogin.value; fatalError("deleted login saved") } catch is CancellationError {}
+let deletedValues = await MainActor.run { commitProbe.values }
+check(deletedValues.isEmpty, "late result cannot save after deletion or dismissal")
+let oldLogin = Task { @MainActor in
+    try await loginOperation.run(operation: { try await loginGate.run() }, commit: { commitProbe.values.append($0) })
+}
+while await loginGate.starts < 2 { await Task.yield() }
+try await loginOperation.run(operation: { 3 }, commit: { commitProbe.values.append($0) })
+await loginGate.complete(2, .success(2))
+do { try await oldLogin.value; fatalError("superseded login saved") } catch is CancellationError {}
+let committedValues = await MainActor.run { commitProbe.values }
+check(committedValues == [3], "new login saves while old generation is rejected")
+print("PASS: malformed paste, automatic callback validation and cancelled/superseded login persistence")
